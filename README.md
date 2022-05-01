@@ -1,1 +1,1 @@
-# deeplearning_rex
+此项目为记录一些学习经验
