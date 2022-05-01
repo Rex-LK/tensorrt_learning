@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "thread": "cpp",
+        "future": "cpp",
+        "condition_variable": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "memory": "cpp",
+        "istream": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "ostream": "cpp"
+    }
+}
