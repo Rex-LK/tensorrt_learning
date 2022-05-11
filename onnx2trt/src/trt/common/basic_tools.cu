@@ -272,7 +272,7 @@ tuple<cv::Mat, cv::Mat> BaiscTools::unet_post_process(float* output, int output_
     uint8_t* pidx = output_index.ptr<uint8_t>(0);
 
     for(int k = 0; k < output_prob.cols * output_prob.rows; ++k, pnet+=num_class, ++prob, ++pidx){
-        int ic = std::max_element(pnet, pnet + num_class) - pnet;
+        int ic = max_element(pnet, pnet + num_class) - pnet;
         *prob  = pnet[ic];
         *pidx  = ic;
     }
@@ -304,4 +304,87 @@ long BaiscTools::get_current_time(){
     gettimeofday(&tv, NULL);
     long timestamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
     return timestamp;
+}
+
+bool BaiscTools::string_to_bool(string value)
+{
+    if (value == "True" || value == "true" || value == "1")
+    {
+        return true;
+    }
+    else if (value == "False" || value == "false" || value == "0" || value == "")
+    {
+        return false;
+    }
+    else
+    {
+        exit(-1);
+    }
+}
+
+vector<string> BaiscTools::parse_string_v1(string &param_string)
+{
+    vector<string> result;
+    istringstream param_string_stream(param_string);
+    string temp;
+
+    while (param_string_stream)
+    {
+        if (!getline(param_string_stream, temp, ','))
+            break;
+        temp.erase(remove(temp.begin(), temp.end(), ' '), temp.end());
+        result.push_back(temp);
+    }
+    return result;
+}
+
+
+
+vector<vector<string>> BaiscTools::parse_string_v2(string &param_string)
+{
+    vector<string> param_list;
+    vector<string> param;
+    vector<vector<string>> result;
+    istringstream param_string_stream(param_string);
+    string temp;
+    while (param_string_stream)
+    {
+        if (!getline(param_string_stream, temp, ';'))
+            break;
+        param_list.push_back(temp);
+    }
+
+    for (int i = 0; i < param_list.size(); i++)
+    {
+        istringstream param_list_stream(param_list[i]);
+        while (param_list_stream)
+        {
+            if (!getline(param_list_stream, temp, ','))
+                break;
+            temp.erase(remove(temp.begin(), temp.end(), ' '), temp.end());
+            param.push_back(temp);
+        }
+        result.push_back(param);
+        param.clear();
+    }
+
+    param_list.clear();
+    param.clear();
+    vector<string>().swap(param_list);
+    vector<string>().swap(param);
+    return result;
+}
+
+
+float BaiscTools::box_overlap(vector<float>region1, vector<float>region2)
+{
+    if (region1[0] > region2[2] || region1[1] > region2[3] || region1[2] < region2[0] || region1[3] < region2[1])
+        return 0;
+    float width = min(region1[2], region2[2]) - max(region1[0], region2[0]);
+    float height = min(region1[3], region2[3]) - max(region1[1], region2[1]);
+    float intersection_area = width * height;
+    float area1 = (region1[3] - region1[1]) * (region1[2] - region1[0]);
+    float area2 = (region2[3] - region2[1]) * (region2[2] - region2[0]);
+    float iou = intersection_area * 1.0 / (area1 + area2 - intersection_area);
+    return iou;
 }

@@ -13,7 +13,7 @@ int main(){
     //     return -1;
     // }
     // yolov5_inference();
-    vit_inference();
+    // vit_inference();
     // detr_inference();
 
     return 0;

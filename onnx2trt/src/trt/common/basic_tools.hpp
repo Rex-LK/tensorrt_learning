@@ -88,82 +88,18 @@ namespace BaiscTools{
     std::tuple<cv::Mat, cv::Mat> unet_post_process(float* output, int output_width, int output_height, int num_class, int ibatch);
     void render(cv::Mat& image, const cv::Mat& prob, const cv::Mat& iclass);
 
-    //计算了两个roi的重叠区域
-    //region1 为数组的指针
-    float box_overlap(float *region1, float *region2);
+    //计算iou
+    float box_overlap(vector<float>region1, vector<float>region2);
     
     //获得当前13位时间戳
     long get_current_time();
-    //
-    // bool string_to_bool(std::string value)
-    // {
-    //     if (value == "True" || value == "true" || value == "1")
-    //     {
-    //         return true;
-    //     }
-    //     else if (value == "False" || value == "false" || value == "0" || value == "")
-    //     {
-    //         return false;
-    //     }
-    //     else
-    //     {
-    //         exit(-1);
-    //     }
-    // }
+    
+    bool string_to_bool(std::string value);
 
     // //将 传入的字符串 "A"  转为 {A}
-    // std::vector<std::string> parse_string_v1(std::string &param_string)
-    // {
-    //     std::vector<std::string> result;
-
-    //     std::istringstream param_string_stream(param_string);
-    //     std::string temp;
-
-    //     while (param_string_stream)
-    //     {
-    //         if (!getline(param_string_stream, temp, ','))
-    //             break;
-    //         temp.erase(remove(temp.begin(), temp.end(), ' '), temp.end());
-    //         result.push_back(temp);
-    //     }
-    //     return result;
-    // }
+    std::vector<std::string> parse_string_v1(std::string &param_string);
     // //将 传入的字符串 "A,B"  转为 {A,B}
-    // std::vector<std::vector<std::string>> parse_string_v2(std::string &param_string)
-    // {
-    //     std::vector<std::string> param_list;
-    //     std::vector<std::string> param;
-    //     std::vector<std::vector<std::string>> result;
-
-    //     std::istringstream param_string_stream(param_string);
-    //     std::string temp;
-    //     while (param_string_stream)
-    //     {
-    //         if (!getline(param_string_stream, temp, ';'))
-    //             break;
-    //         param_list.push_back(temp);
-    //     }
-
-    //     for (int i = 0; i < param_list.size(); i++)
-    //     {
-    //         std::istringstream param_list_stream(param_list[i]);
-    //         while (param_list_stream)
-    //         {
-    //             if (!getline(param_list_stream, temp, ','))
-    //                 break;
-    //             temp.erase(remove(temp.begin(), temp.end(), ' '), temp.end());
-    //             param.push_back(temp);
-    //         }
-    //         result.push_back(param);
-    //         param.clear();
-    //     }
-
-    //     param_list.clear();
-    //     param.clear();
-    //     std::vector<std::string>().swap(param_list);
-    //     std::vector<std::string>().swap(param);
-    //     return result;
-    // }
+    std::vector<std::vector<std::string>> parse_string_v2(std::string &param_string);
 }
 
 

@@ -354,4 +354,5 @@ objs/main.cpp.o: src/main.cpp /usr/include/stdc-predef.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda/driver_functions.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda/vector_functions.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda/vector_functions.hpp \
+ /usr/include/x86_64-linux-gnu/sys/time.h \
  src/trt/common/simple-logger.hpp src/trt/builder/trt-builder.hpp
