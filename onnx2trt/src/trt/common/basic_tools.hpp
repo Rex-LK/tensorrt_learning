@@ -89,7 +89,7 @@ namespace BaiscTools{
     void render(cv::Mat& image, const cv::Mat& prob, const cv::Mat& iclass);
 
     //计算iou
-    float box_overlap(vector<float>region1, vector<float>region2);
+    float box_overlap(std::vector<float>region1, std::vector<float>region2);
     
     //获得当前13位时间戳
     long get_current_time();

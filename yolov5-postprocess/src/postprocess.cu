@@ -181,7 +181,7 @@ std::vector<Box> cpu_decode(float* predict, int rows, int cols, float confidence
         float confidence = prob * objness;
         if(confidence < confidence_threshold)
             continue;
-        // 计算坐标
+        //计算坐标 
         float cx     = pitem[0];
         float cy     = pitem[1];
         float width  = pitem[2];

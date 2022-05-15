@@ -23,7 +23,7 @@ int main(){
     // 85 * 25200 二维矩阵
 
 
-    auto boxes = gpu_decode(ptr, nrows, ncols,0.25f,0.45f);
+    auto boxes = cpu_decode(ptr, nrows, ncols,0.25f,0.45f);
     
     for(auto& box : boxes){
         cv::rectangle(image, cv::Point(box.left, box.top), cv::Point(box.right, box.bottom), cv::Scalar(0, 255, 0), 2);
