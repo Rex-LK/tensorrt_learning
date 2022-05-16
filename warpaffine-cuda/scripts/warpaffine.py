@@ -1,83 +1,97 @@
-# p1 ~ p4 的值
-p1 = 1
-p2 = 2 
-p3 = 8
-p4 = 12
+void unet_inference(){
+    TRTLogger logger;
+    auto engine_data = load_file("unet.trtmodel");
+    auto runtime   = make_nvshared(nvinfer1::createInferRuntime(logger));
+    auto engine = make_nvshared(runtime->deserializeCudaEngine(engine_data.data(), engine_data.size()));
+    if(engine == nullptr){
+        printf("Deserialize cuda engine failed.\n");
+        runtime->destroy();
+        return;
+    }
 
-# p1~p4 位四个相邻的像素，围起来的面积为1
+    if(engine->getNbBindings() != 2){
+        printf("你的onnx导出有问题，必须是1个输入和1个输出，你这明显有：%d个输出.\n", engine->getNbBindings() - 1);
+        return;
+    }
 
-p = 0.6,0.8
+    cudaStream_t stream = nullptr;
+    cudaStreamCreate(&stream);
+    auto execution_context = make_nvshared(engine->createExecutionContext());
 
-p1_w = (1 - p[0]) * (1 - p[1])
-p2_w = p[0] * (1 - p[1])
-p3_w = (1 - p[0]) * p[1]
-p4_w = p[0] * p[1]
+    int input_batch = 1;
+    int input_channel = 3;
+    int input_height = 512;
+    int input_width = 512;
+    int input_numel = input_batch * input_channel * input_height * input_width;
+    float* input_data_host = nullptr;
+    float* input_data_device = nullptr;
+    cudaMallocHost(&input_data_host, input_numel * sizeof(float));
+    cudaMalloc(&input_data_device, input_numel * sizeof(float));
 
-res = p1 * p1_w + p2 * p2_w + p3 * p3_w + p4 * p4_w 
-print(res)
+    ///////////////////////////////////////////////////
+    // letter box
+    auto image = cv::imread("street.jpg");
+    float scale_x = input_width / (float)image.cols;
+    float scale_y = input_height / (float)image.rows;
+    float scale = std::min(scale_x, scale_y);
+    float i2d[6], d2i[6];
+    i2d[0] = scale;  i2d[1] = 0;  i2d[2] = (-scale * image.cols + input_width + scale  - 1) * 0.5;
+    i2d[3] = 0;  i2d[4] = scale;  i2d[5] = (-scale * image.rows + input_height + scale - 1) * 0.5;
 
+    cv::Mat m2x3_i2d(2, 3, CV_32F, i2d);
+    cv::Mat m2x3_d2i(2, 3, CV_32F, d2i);
+    cv::invertAffineTransform(m2x3_i2d, m2x3_d2i);
 
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt 
+    cv::Mat input_image(input_height, input_width, CV_8UC3);
+    cv::warpAffine(image, input_image, m2x3_i2d, input_image.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar::all(114));
+    cv::imwrite("input-image.jpg", input_image);
 
-def myWarpaffine(img,M,d_size,constant=(0, 0, 0)):
-    # 其中 M 为 原图变为目标图的变换矩阵，将缩放后的图恢复到原图需要取逆变换
-    M_inv = cv2.invertAffineTransform(M)
-    constant = np.array(constant)
-    o_h, o_w = img.shape[:2]
-    d_h, d_w = d_size
-    dst_img = np.full((d_h, d_w, 3), constant, dtype=np.uint8)
-    o_range = lambda p: p[0] >= 0 and p[0] < o_w and p[1] >= 0 and p[1] < o_h
-    
-    for y in range(d_h):
-        for x in range(d_w):
-            # 缩放后图上的一点
-            homogeneous = np.array([[x, y, 1]]).T
-            
-            # 恢复到原图的尺寸
-            ox, oy = M_inv @ homogeneous
-            # p1   p2
-            #    p
-            # p3   p4
-            #np.floor(ox) 类型为np.float64
-            low_ox = int(np.floor(ox))
-            low_oy = int(np.floor(oy))
-            high_ox = low_ox + 1
-            high_oy = low_oy + 1
-            
-            p = ox - low_ox, oy - low_oy
-            p1_w = (1 - p[0]) * (1 - p[1])
-            p2_w = p[0] * (1 - p[1])
-            p3_w = (1 - p[0]) * p[1]
-            p4_w = p[0] * p[1]
-            
-            p1 = low_ox, low_oy
-            p2 = high_ox, low_oy
-            p3 = low_ox, high_oy
-            p4 = high_ox, high_oy
-            # 避免超出图片范围
-            p1_value = img[p1[1], p1[0]] if o_range(p1) else constant
-            p2_value = img[p2[1], p2[0]] if o_range(p2) else constant
-            p3_value = img[p3[1], p3[0]] if o_range(p3) else constant
-            p4_value = img[p4[1], p4[0]] if o_range(p4) else constant
-            dst_img[y, x] = p1_w * p1_value + p2_w * p2_value + p3_w * p3_value + p4_w * p4_value    
-    return dst_img
+    int image_area = input_image.cols * input_image.rows;
+    unsigned char* pimage = input_image.data;
+    float* phost_b = input_data_host + image_area * 0;
+    float* phost_g = input_data_host + image_area * 1;
+    float* phost_r = input_data_host + image_area * 2;
+    for(int i = 0; i < image_area; ++i, pimage += 3){
+        *phost_r++ = pimage[0] / 255.0f;
+        *phost_g++ = pimage[1] / 255.0f;
+        *phost_b++ = pimage[2] / 255.0f;
+    }
+    ///////////////////////////////////////////////////
+    (cudaMemcpyAsync(input_data_device, input_data_host, input_numel * sizeof(float), cudaMemcpyHostToDevice, stream));
 
-if __name__ == "__main__":
-    img_o = cv2.imread("/home/rex/Desktop/rex_extra/notebook/warpaffine/keji2.jpeg")
-    # 图片旋转中心、旋转角度、缩放倍数
-    M = cv2.getRotationMatrix2D((0, 0), -30, 0.6)
-    or_test = cv2.warpAffine(img_o, M, (640, 640))
-    my_test = myWarpaffine(img_o,M,(640, 640))
+    // 3x3输入，对应3x3输出
+    auto output_dims   = engine->getBindingDimensions(1);
+    int output_height  = output_dims.d[1];
+    int output_width   = output_dims.d[2];
+    int num_classes    = output_dims.d[3];
+    int output_numel = input_batch * output_height * output_width * num_classes;
+    float* output_data_host = nullptr;
+    float* output_data_device = nullptr;
+    (cudaMallocHost(&output_data_host, sizeof(float) * output_numel));
+    (cudaMalloc(&output_data_device, sizeof(float) * output_numel));
 
-    plt.figure(figsize=(10, 10))
-    plt.subplot(1, 2, 1)
-    plt.title("opencv")
-    #BGR -> RGB
-    plt.imshow(or_test[...,::-1])
+    // 明确当前推理时，使用的数据输入大小
+    auto input_dims = engine->getBindingDimensions(0);
+    input_dims.d[0] = input_batch;
 
-    plt.subplot(1, 2, 2)
-    plt.title("pyWarpaffine")
-    # BGR -> RGB
-    plt.imshow(my_test[...,::-1])
+    execution_context->setBindingDimensions(0, input_dims);
+    float* bindings[] = {input_data_device, output_data_device};
+    bool success      = execution_context->enqueueV2((void**)bindings, stream, nullptr);
+    (cudaMemcpyAsync(output_data_host, output_data_device, sizeof(float) * output_numel, cudaMemcpyDeviceToHost, stream));
+    (cudaStreamSynchronize(stream));
+
+    cv::Mat prob, iclass;
+    tie(prob, iclass) = post_process(output_data_host, output_width, output_height, num_classes, 0);
+    cv::warpAffine(prob, prob, m2x3_d2i, image.size(), cv::INTER_LINEAR);
+    cv::warpAffine(iclass, iclass, m2x3_d2i, image.size(), cv::INTER_NEAREST);
+    render(image, prob, iclass);
+
+    printf("Done, Save to image-draw.jpg\n");
+    cv::imwrite("image-draw.jpg", image);
+
+    (cudaStreamDestroy(stream));
+    (cudaFreeHost(input_data_host));
+    (cudaFreeHost(output_data_host));
+    (cudaFree(input_data_device));
+    (cudaFree(output_data_device));
+}

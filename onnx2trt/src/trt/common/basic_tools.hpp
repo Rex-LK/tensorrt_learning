@@ -24,7 +24,6 @@
 #include <common/simple-logger.hpp>
 #include <builder/trt-builder.hpp>
 
-#define min(a, b)  ((a) < (b) ? (a) : (b))
 
 
 namespace BaiscTools{

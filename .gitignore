@@ -1,3 +1,4 @@
+onnx2trt/objs/*
 *.trtmodel
 *.pth
 *.onnx
