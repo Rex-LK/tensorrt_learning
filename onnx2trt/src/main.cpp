@@ -13,7 +13,6 @@ int main(){
     if(!BaiscTools::build_model("unet",1)){
         return -1;
     }
-
     demoInfer demo;
     string demo_name = "unet";
     demo.do_infer(demo_name);
