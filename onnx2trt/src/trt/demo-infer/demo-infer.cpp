@@ -379,15 +379,17 @@ static vector<int> _classes_colors = {
 };
 
 static tuple<cv::Mat, cv::Mat> post_process(float* output, int output_width, int output_height, int num_class, int ibatch){
-
+    // output 1*(numclass)*512*512）
     cv::Mat output_prob(output_height, output_width, CV_32F);
     cv::Mat output_index(output_height, output_width, CV_8U);
-
+    //从第几个batch开始
+    //每次加一个numclass 重复512*512次
     float* pnet   = output + ibatch * output_width * output_height * num_class;
     float* prob   = output_prob.ptr<float>(0);
     uint8_t* pidx = output_index.ptr<uint8_t>(0);
 
     for(int k = 0; k < output_prob.cols * output_prob.rows; ++k, pnet+=num_class, ++prob, ++pidx){
+        //找到num_class中得分最大的值
         int ic = std::max_element(pnet, pnet + num_class) - pnet;
         *prob  = pnet[ic];
         *pidx  = ic;
@@ -402,7 +404,7 @@ static void render(cv::Mat& image, const cv::Mat& prob, const cv::Mat& iclass){
     auto pimage = image.ptr<cv::Vec3b>(0);
     auto pprob  = prob.ptr<float>(0);
     auto pclass = iclass.ptr<uint8_t>(0);
-
+    //0~512*512
     for(int i = 0; i < image.cols*image.rows; ++i, ++pimage, ++pprob, ++pclass){
 
         int iclass        = *pclass;
@@ -418,7 +420,7 @@ static void render(cv::Mat& image, const cv::Mat& prob, const cv::Mat& iclass){
 }
 
 void demoInfer::unet_inference(){
-    auto engine = TRT::load_infer("unet.trtmodel");
+    auto engine = TRT::load_infer("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/unet.trtmodel");
     if(!engine){
         printf("load engine failed \n");
         return;
@@ -429,7 +431,7 @@ void demoInfer::unet_inference(){
     int input_height = input->height();
     int num_classes = 21;
 
-    auto image = cv::imread("street.jpg");
+    auto image = cv::imread("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/street.jpg");
     auto imge_warpaffined = BaiscTools::warpaffine_cpu(image,input_width,input_height);
     auto input_image = imge_warpaffined.dst_image;
     input_image.convertTo(input_image, CV_32F);

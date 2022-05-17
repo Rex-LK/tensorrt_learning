@@ -8,7 +8,8 @@
 using namespace std;
                                                                                                                                                                                                                                                                         
 int main(){
-    if(!BaiscTools::build_model("unet",1)){
+    //cmake和make是不同的路径
+    if(!BaiscTools::build_model("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/unet",1)){
         return -1;
     }
     demoInfer demo;

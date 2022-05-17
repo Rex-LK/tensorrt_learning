@@ -85,7 +85,7 @@ python export_onnx.py
 
 ### 在src/main.cpp中提供了build_engine 和 inference的代码。直接在onnx2trt文件夹下，进行执行 make run，即可进行推理，从workspace中的结果来看，基本上与torch模型一致。
 
-### 或者在CMakeLists中修改本机的tensorrt、protobuf路径,，执行
+### 或者在CMakeLists中修改本机的tensorrt、protobuf路径，可以将模型路径和图片路径修改为绝对路径，执行
 
 ### 修改src/main.cpp中的demo名字
 

@@ -1,5 +1,6 @@
 onnx2trt/objs/*
 onnx2trt/build/*
+onnx2trt/workspace/pro
 *.trtmodel
 *.pth
 *.onnx
