@@ -4,7 +4,7 @@
 
 ## 1、前言
 
-### 由于显卡、算力的广泛普及，准备利用tensorrt对VIT、SWIN、DETR进行加速，基本做法是现将torch的模型转成ONNX，然后再将ONNX模型转化为engine，其中SWIN在onnx转engine时出现问题，VIT、DETR均未发现问题，其中tensorrt加速以及transformer原理可参考如下两个repo
+### 由于显卡、算力的广泛普及，准备利用tensorrt对VIT、SWIN、DETR等一系列模型进行加速，基本做法是现将torch的模型转成onnx，然后再将onnx模型转化为engine，其中SWIN在onnx转engine时出现问题，VIT、DETR均未发现问题，其中tensorrt加速以及transformer原理可参考如下两个repo
 
 ## 手写AI:https://github.com/shouxieai/tensorRT_Pro
 
@@ -16,7 +16,7 @@
 
 ## 2、export_onnx
 
-### 在demo文件夹中，包含了已经实现的tensort加速的模型
+### 在onnx2trt/demo中包含了目前已经加速成功的模型
 
 ## 2.1 vit2onnx
 
@@ -84,6 +84,16 @@ python export_onnx.py
 ### 在Makefile中修改本机对应的环境，可以参考手写AI提供的自动环境配置进行。
 
 ### 在src/main.cpp中提供了build_engine 和 inference的代码。直接在onnx2trt文件夹下，进行执行 make run，即可进行推理，从workspace中的结果来看，基本上与torch模型一致。
+
+### 或者在CMakeLists中修改本机的tensorrt、protobuf路径,，执行
+
+### 修改src/main.cpp中的demo名字
+
+### mkdir build && cd build
+
+### cmake .. && make -j
+
+### 在worksapce中执行可执行文件./demo_infer 即可运行相应的demo
 
 ## 4、总结
 

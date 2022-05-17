@@ -6,9 +6,7 @@
 #include <common/basic_tools.hpp>
 
 using namespace std;
-
-
-
+                                                                                                                                                                                                                                                                        
 int main(){
     if(!BaiscTools::build_model("unet",1)){
         return -1;
