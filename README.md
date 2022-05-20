@@ -8,7 +8,7 @@
 
 ### 个人学习项目地址: https://github.com/Rex-LK/deeplearning_rex
 
-### 模型链接:链接: https://pan.baidu.com/s/1NRtkw3H1teEXsXQVQOlVIw?pwd=n46c 提取码: n46c 
+### 模型链接:https://pan.baidu.com/s/18yIsypWMg0sT_uAR_MhDSA 提取码: sh7c
 
 ### 2、更新日志
 
