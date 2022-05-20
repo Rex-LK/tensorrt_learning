@@ -10,9 +10,14 @@ public:
     void yolov5_inference();
     void vit_inference();
     void detr_inference();
+    void hrnet_inference();
+    void load_from_py();
     void do_infer(std::string demo_name){
         if(demo_name=="unet"){
             unet_inference();
+        }
+        else if(demo_name == "load_from_py"){
+            // load_from_py();
         }
         else if(demo_name == "centernet"){
             centernet_inference();
@@ -25,6 +30,9 @@ public:
         }
         else if(demo_name == "detr"){
             detr_inference();
+        }
+        else if(demo_name == "hrnet"){
+            hrnet_inference();
         }
     }
 };

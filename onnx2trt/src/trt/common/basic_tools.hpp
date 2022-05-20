@@ -49,7 +49,6 @@ namespace BaiscTools{
     //gpu warpaffine
     struct MySize{
         int width = 0, height = 0;
-
         MySize() = default;
         MySize(int w, int h)
         :width(w), height(h){}
