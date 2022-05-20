@@ -28,7 +28,7 @@
 
 ### 3.1 ONNX2TRT
 
-### 基于不同的视觉工程进行tensort加速，可参考/onnx/demo里面的具体项目。
+### 基于不同的视觉工程进行tensort加速，可参考/onnx/demo里面的具体项目，实现过程可参考onnx2trt里面的readme文件
 
 ### 3.2 tool_learn
 
