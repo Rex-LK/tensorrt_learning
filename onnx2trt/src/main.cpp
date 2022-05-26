@@ -9,11 +9,11 @@ using namespace std;
                                                                                                                                                                                                                                                                         
 int main(){
     //cmake和make是不同的路径
-    if(!BaiscTools::build_model("hrnet",1)){
+    if(!BaiscTools::build_model("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/centernet",1)){
         return -1;
     }
     demoInfer demo;
-    string demo_name = "hrnet";
+    string demo_name = "centernet";
     demo.do_infer(demo_name);
     return 0;
 }

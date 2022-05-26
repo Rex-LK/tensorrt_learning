@@ -20,7 +20,7 @@ bool BaiscTools::build_model(string model,int maxbatch){
         printf("%s.trtmodel has exists.\n",model.c_str());
         return true;
     }
-
+    //onnx2trtmodel
     TRT::compile(
         TRT::Mode::FP32,
         maxbatch,

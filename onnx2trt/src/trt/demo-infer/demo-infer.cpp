@@ -196,7 +196,7 @@ struct bbox{
 };
 
 void demoInfer::centernet_inference(){
-    auto engine = TRT::load_infer("centernet.trtmodel");
+    auto engine = TRT::load_infer("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/centernet.trtmodel");
     if(!engine){
         printf("load engine failed \n");
         return;
@@ -207,7 +207,7 @@ void demoInfer::centernet_inference(){
     int input_height = input->height();
     float mean[] = {0.40789655, 0.44719303, 0.47026116};
     float std[]  = {0.2886383, 0.27408165, 0.27809834};
-    auto image = imread("street.jpg");
+    auto image = imread("/home/rex/Desktop/deeplearning_rex/onnx2trt/workspace/street.jpg");
     auto img_o = image.clone();
     int img_w = image.cols;
     int img_h = image.rows;

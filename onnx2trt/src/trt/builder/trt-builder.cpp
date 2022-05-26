@@ -311,6 +311,7 @@ namespace TRT {
 		const size_t maxWorkspaceSize) {
 
 		INFO("Compile %s %s.", mode_string(mode), source.c_str());
+		//构造
 		auto builder = make_nvshared(createInferBuilder(gLogger));
 		if (builder == nullptr) {
 			INFOE("Can not create builder.");
