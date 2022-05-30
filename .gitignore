@@ -10,3 +10,4 @@ onnx2trt/workspace/demo_infer
 *.idea
 *.__pycache__
 *.pyengine
+.vscode

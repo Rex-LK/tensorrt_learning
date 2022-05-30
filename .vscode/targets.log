@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat May 28 20:44:19 2022
+# Make data base, printed on Mon May 30 10:04:08 2022
 
 # Variables
 
@@ -37,7 +37,7 @@ GDMSESSION = ubuntu
 # environment
 XMODIFIERS = @im=fcitx
 # makefile
-CURDIR := /home/rex/Desktop/deeplearning_rex
+CURDIR := /home/rex/Desktop/tensorrt_learning
 # makefile
 SHELL = /bin/sh
 # environment
@@ -45,7 +45,7 @@ VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_languagePackId":"42e84e0914b17800d483f69e299e1b00.zh-cn","_translationsConfigFile":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/tcf.json","_cacheRoot":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn","_resolvedLanguagePackCoreLocation":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/da15b6fd3ef856477bf6f4fb29ba1b7af717770d","_corruptedFile":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/corrupted.info","_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:57480
+JOURNAL_STREAM = 8:58754
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # makefile
@@ -65,7 +65,7 @@ XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/d
 # environment
 ROS_ETC_DIR = /opt/ros/noetic/etc/ros
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=320ef0a674ed3ff1ce4fddb062917e20
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=dec6ef1936c3d1b4f6794fd16294112b
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
@@ -73,7 +73,7 @@ _ = /usr/bin/code
 # environment
 ROS_PACKAGE_PATH = /opt/ros/noetic/share
 # environment
-MANAGERPID = 2132
+MANAGERPID = 2179
 # environment
 ROS_PYTHON_VERSION = 3
 # environment
@@ -81,7 +81,7 @@ LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 LC_NAME = zh_CN.UTF-8
 # environment
-VSCODE_CWD = /home/rex/Desktop/deeplearning_rex
+VSCODE_CWD = /home/rex/Desktop/tensorrt_learning
 # environment
 CLUTTER_IM_MODULE = fcitx
 # default
@@ -93,7 +93,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/rex:@/tmp/.ICE-unix/2411,unix/rex:/tmp/.ICE-unix/2411
+SESSION_MANAGER = local/rex:@/tmp/.ICE-unix/2458,unix/rex:/tmp/.ICE-unix/2458
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -105,7 +105,7 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = 86ad9ba765f440f4ae8f8547f9c01524
+INVOCATION_ID = edfdfe4d1f9d4108928f67796f98a444
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -127,11 +127,11 @@ GTK_IM_MODULE = fcitx
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
-PWD = /home/rex/Desktop/deeplearning_rex
+PWD = /home/rex/Desktop/tensorrt_learning
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2328
+SSH_AGENT_PID = 2376
 # environment
 PKG_CONFIG_PATH = /opt/ros/noetic/lib/pkgconfig
 # environment
@@ -179,7 +179,7 @@ SHLVL = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-358e78a0-16df-460d-959c-8baafadd1e41.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-36ede44e-8c91-43a7-96a0-2d98c3a93e62.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -247,11 +247,11 @@ CONDA_PYTHON_EXE = /home/rex/miniconda3/bin/python
 # environment
 QT4_IM_MODULE = fcitx
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/eda69bf4_8fdf_4b61_842c_630664e3db98
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/187c458e_eec2_40f2_9a17_d92940b71cba
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.2328
+GNOME_TERMINAL_SERVICE = :1.1617
 # default
 SUFFIXES := 
 # environment
@@ -273,15 +273,15 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 144169
+VSCODE_PID = 21585
 # environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=320ef0a674ed3ff1ce4fddb062917e20
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=dec6ef1936c3d1b4f6794fd16294112b
 # environment
 _CE_CONDA = 
+# variable set hash-table stats:
  
 make: *** No rule to make target 'all'.  Stop.
 
-# variable set hash-table stats:
 # Load=134/1024=13%, Rehash=0, Collisions=20/156=13%
 
 # Pattern-specific Variable Values
@@ -290,9 +290,9 @@ make: *** No rule to make target 'all'.  Stop.
 
 # Directories
 
-# . (device 66305, inode 26086516): 9 files, no impossibilities.
+# . (device 66305, inode 26086516): 10 files, no impossibilities.
 
-# 9 files, no impossibilities in 1 directories.
+# 10 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -342,12 +342,12 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 17 / storage = 149 B / avg = 8 B
-# current buf: size = 8162 B / used = 149 B / count = 17 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 18 / storage = 155 B / avg = 8 B
+# current buf: size = 8162 B / used = 155 B / count = 18 / avg = 8 B
 
-# strcache performance: lookups = 20 / hit rate = 15%
+# strcache performance: lookups = 21 / hit rate = 14%
 # hash-table stats:
-# Load=17/8192=0%, Rehash=0, Collisions=1/20=5%
-# Finished Make data base on Sat May 28 20:44:19 2022
+# Load=18/8192=0%, Rehash=0, Collisions=1/21=5%
+# Finished Make data base on Mon May 30 10:04:08 2022
 
  
