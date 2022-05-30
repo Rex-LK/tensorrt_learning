@@ -6,7 +6,7 @@
 
 ### TensoRT代码可参考：https://github.com/shouxieai/tensorRT_Pro
 
-### 个人学习项目地址: https://github.com/Rex-LK/deeplearning_rex
+### 个人学习项目地址: https://github.com/Rex-LK/tensorrt_learning
 
 ### 模型链接:https://pan.baidu.com/s/18yIsypWMg0sT_uAR_MhDSA 提取码: sh7c
 
