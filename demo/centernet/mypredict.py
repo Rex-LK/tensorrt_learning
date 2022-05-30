@@ -100,7 +100,6 @@ image_data = resize_image(image, (512, 512), None)
 image_data = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, dtype='float32')), (2, 0, 1)), 0)
 images = torch.from_numpy(np.asarray(image_data)).type(torch.FloatTensor)
 pred = model.forward(images).detach().numpy().astype(np.float32)
-# save_tensor(pred,"pred.tensor")
 
 # pred_hms = pred[0,:,0:20]
 # pred_wh =  pred[0,:,20:22]

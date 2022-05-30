@@ -1,7 +1,12 @@
 onnx2trt/objs/*
 onnx2trt/build/*
 onnx2trt/workspace/pro
+onnx2trt/workspace/demo_infer
 *.trtmodel
 *.pth
 *.onnx
 *.tensor
+*tensor
+*.idea
+*.__pycache__
+*.pyengine

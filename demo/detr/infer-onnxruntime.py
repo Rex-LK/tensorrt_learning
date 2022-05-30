@@ -27,6 +27,7 @@ if __name__ == "__main__":
 
     session = onnxruntime.InferenceSession("detr_sim.onnx", providers=["CPUExecutionProvider"])
     pred = session.run(["predict"], {"image": image_input})[0]
+    print(pred)
     scores = torch.from_numpy(pred[0][:,0:91])
     bboxes = torch.from_numpy(pred[0][:,91:])
     keep = scores.max(-1).values > 0.7

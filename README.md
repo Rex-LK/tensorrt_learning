@@ -20,7 +20,7 @@
 
 ### 2022-05-20:在onnx项目下增加了hrnet-tensorrt加速方式，预测效果与demo/HRnet作者里面的预测结果一致
 
-### 2022-05-17: 为onnx2trt增加了CMakeLists的编译方式，需要修改在CmakeLists中本机的tensorrt和protobuf的路径即可，编译好的文件在workspace中
+### 2022-05-17: 为onnx2trt增加了CMakeLists的编译方式，需要修改在CmakeLists中本机的tensorrt和protobuf的路径即可，编译好的文件在workspace中，==使用cmake时使用模型和图片使用绝对路径，使用makefile时使用相对路径即可。==
 
 ## ...centernet、vit、unet、等均已经实现
 
@@ -28,7 +28,7 @@
 
 ### 3.1 ONNX2TRT
 
-### 基于不同的视觉项目进行tensort加速，可参考/onnx/demo里面的具体项目，实现过程可参考onnx2trt里面的readme文件
+### 基于不同的视觉项目进行tensort加速，可参考demo里面的具体项目，实现过程可参考onnx2trt里面的readme文件
 
 ### 3.2 tool_learn
 

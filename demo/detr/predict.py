@@ -18,16 +18,12 @@ if __name__ == "__main__":
     img = transform(im).unsqueeze(0)
     pred = detr(img)
     # 尽可能的将后后处理放在onnx
-    print("---------")
     scores = pred[0][:,0:91]
-    print(scores.shape)
     # 需要恢复成原图大小
     bboxes =  pred[0][:,91:]
-    print(bboxes.shape)
     keep = scores.max(-1).values > 0.7
-    print(keep)
     scores = scores[keep]
+    print(scores.shape)
     bboxes = bboxes[keep]
-    print(bboxes)
     fin_bboxes = rescale_bboxes(bboxes, im.size)
     plot_results(im, scores, fin_bboxes)

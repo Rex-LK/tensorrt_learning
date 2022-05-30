@@ -1,0 +1,53 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/rex/Desktop/deeplearning_rex/onnx2trt'
+Compile depends CUDA src/trt/common/basic_tools.cu
+ 
+Compile depends C++ src/trt/common/trt-tensor.cpp
+ 
+Compile depends C++ src/trt/common/simple-logger.cpp
+ 
+Compile depends C++ src/trt/common/mix-memory.cpp
+ 
+Compile depends C++ src/trt/common/cuda-tools.cpp
+ 
+Compile depends C++ src/trt/demo-infer/demo-infer.cpp
+ 
+Compile depends C++ src/trt/demo-infer/yolov5/yolov5.cpp
+ 
+Compile depends C++ src/trt/infer/trt-infer.cpp
+ 
+Compile depends C++ src/trt/builder/trt-builder.cpp
+ 
+Compile depends C++ src/main.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/onnxErrorRecorder.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/ShapedWeights.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/onnxplugin.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/builtin_op_importers.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/ShapeTensor.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/NvOnnxParser.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/ModelImporter.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/onnx2trt_utils.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/LoopHelpers.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/OnnxAttrs.cpp
+ 
+Compile depends C++ src/onnx-tensorrt/RNNHelpers.cpp
+ 
+Compile depends C++ src/onnx/onnx-ml.pb.cpp
+ 
+Compile depends C++ src/onnx/onnx-operators-ml.pb.cpp
+ 
+echo Compile CXX src/onnx/onnx-operators-ml.pb.cpp
+mkdir -p objs/onnx/
+g++ -c src/onnx/onnx-operators-ml.pb.cpp -o objs/onnx/onnx-operators-ml.pb.cpp.o -std=c++11 -w -g -O0 -m64 -fPIC -fopenmp -pthread -Isrc -Isrc/trt -I/home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda -I/home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT -I/home/rex/miniconda3/lib/python3.9/site-packages/trtpy/cpp-packages/opencv4.2/include -I/home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/protobuf
+make: Leaving directory '/home/rex/Desktop/deeplearning_rex/onnx2trt'
+ 

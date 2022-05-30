@@ -1,0 +1,88 @@
+from cuda import cudart
+import tensorrt as trt
+import numpy as np
+import cv2
+
+
+class Infer_bacis():
+    def __init__(self, engine_file_path, batch_size):
+        TRT_LOGGER = trt.Logger(trt.Logger.INFO)
+        runtime = trt.Runtime(TRT_LOGGER)
+        with open(engine_file_path, "rb") as f:
+            engine = runtime.deserialize_cuda_engine(f.read())
+        self.context = engine.create_execution_context()
+        _, self.stream = cudart.cudaStreamCreate()
+        self.host_inputs = []
+        self.cuda_inputs = []
+        self.host_outputs = []
+        self.cuda_outputs = []
+        self.bindings = []
+        self.batch_size = batch_size
+        assert self.batch_size <= engine.max_batch_size
+        for binding in engine:
+            size = trt.volume(engine.get_binding_shape(binding)) * self.batch_size
+            dtype = trt.nptype(engine.get_binding_dtype(binding))
+            host_mem = np.empty(size, dtype=dtype)
+            _, cuda_mem = cudart.cudaMallocAsync(host_mem.nbytes, self.stream)
+            self.bindings.append(int(cuda_mem))
+            if engine.binding_is_input(binding):
+                self.input_w = engine.get_binding_shape(binding)[-1]
+                self.input_h = engine.get_binding_shape(binding)[-2]
+                self.host_inputs.append(host_mem)
+                self.cuda_inputs.append(cuda_mem)
+            else:
+                self.host_outputs.append(host_mem)
+                self.cuda_outputs.append(cuda_mem)
+
+    def detect(self, image):
+        batch_input_image = np.ascontiguousarray(image)
+        np.copyto(self.host_inputs[0], batch_input_image.ravel())
+        cudart.cudaMemcpyAsync(self.cuda_inputs[0], self.host_inputs[0].ctypes.data, self.host_inputs[0].nbytes,
+                               cudart.cudaMemcpyKind.cudaMemcpyHostToDevice, self.stream)
+
+        self.context.execute_async(batch_size=self.batch_size, bindings=self.bindings, stream_handle=self.stream)
+
+        cudart.cudaMemcpyAsync(self.host_outputs[0].ctypes.data, self.cuda_outputs[0], self.host_outputs[0].nbytes,
+                               cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, self.stream)
+        cudart.cudaStreamSynchronize(self.stream)
+        output = self.host_outputs[0]
+        return output
+
+    def detect_batch_image(self, image):
+        batch_input_image = np.ascontiguousarray(image)
+        np.copyto(self.host_inputs[0], batch_input_image.ravel())
+        cudart.cudaMemcpyAsync(self.cuda_inputs[0], self.host_inputs[0].ctypes.data, self.host_inputs[0].nbytes,
+                               cudart.cudaMemcpyKind.cudaMemcpyHostToDevice, self.stream)
+
+        self.context.execute_async(batch_size=self.batch_size, bindings=self.bindings, stream_handle=self.stream)
+
+        cudart.cudaMemcpyAsync(self.host_outputs[0].ctypes.data, self.cuda_outputs[0], self.host_outputs[0].nbytes,
+                               cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, self.stream)
+        cudart.cudaStreamSynchronize(self.stream)
+        output = self.host_outputs[0]
+        return output
+
+    def destroy(self):
+        cudart.cudaStreamDestroy(self.stream)
+        cudart.cudaFree(self.cuda_inputs[0])
+        cudart.cudaFree(self.cuda_outputs[0])
+
+
+# 1、还需对batch的图片进行推理
+# 2、需要记录原图的大小,以及原图，便于后处理
+
+
+def image_resize_pro(image_o, image_o_size, imagenet_mean, imagenet_std):
+    image_input = cv2.resize(image_o, image_o_size)  # resize
+    image_input = image_input[..., ::-1]  # BGR -> RGB
+    image_input = image_input / 255.0
+    image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
+    image_input = image_input.astype(np.float32)  # float64 -> float32
+    image_input = image_input.transpose(2, 0, 1)  # HWC -> CHW
+    image_input = np.ascontiguousarray(image_input)  # contiguous array memory
+    image_input = image_input[None, ...]  # CHW -> 1CHW
+    return image_input
+
+
+def image_warpaffine(self):
+    ...

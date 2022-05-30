@@ -45,6 +45,6 @@ torch.onnx.export(
     "centernet.onnx",
     input_names=["image"],
     output_names=["predict"],
-    opset_version=11,
+    opset_version=13,
     dynamic_axes={"image": {0: "batch"}}
 )

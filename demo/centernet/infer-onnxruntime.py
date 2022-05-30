@@ -15,4 +15,12 @@ image_data = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, d
 images = np.asarray(image_data).astype(np.float32)
 session = onnxruntime.InferenceSession("centernet.onnx", providers=["CPUExecutionProvider"])
 pred = session.run(["predict"], {"image": images})[0]
-print(pred.shape)
+pred = torch.from_numpy(pred)
+pred_hms = pred[0,:,0:20]
+pred_wh =  pred[0,:,20:22]
+pred_xy =  pred[0,:,22:]
+keep = pred_hms.max(-1).values > 0.3
+pred_hms = pred_hms[keep]
+pred_wh =  pred_wh[keep]
+pred_xy =  pred_xy[keep]
+print(pred_wh.shape)
