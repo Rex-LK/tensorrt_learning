@@ -18,7 +18,7 @@ class Infer_bacis():
         self.cuda_outputs = []
         self.bindings = []
         self.batch_size = batch_size
-        self.context.set_binding_shape(0, (2, 3, 800, 1066))
+        # self.context.set_binding_shape(0, (self.batch_size, 3, 800, 1066))
         # assert self.batch_size <= engine.max_batch_size
         for binding in engine:
             size = abs(trt.volume(engine.get_binding_shape(binding))) * self.batch_size

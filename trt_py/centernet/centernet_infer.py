@@ -46,25 +46,6 @@ def nms(boxes, scores, iou_threshold):
     return keep
 
 
-def centernet_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_image):
-    box_yx = box_xy[..., ::-1]
-    box_hw = box_wh[..., ::-1]
-    input_shape = np.array(input_shape)
-    image_shape = np.array(image_shape)
-
-    if letterbox_image:
-        new_shape = np.round(image_shape * np.min(input_shape / image_shape))
-        offset = (input_shape - new_shape) / 2. / input_shape
-        scale = input_shape / new_shape
-
-        box_yx = (box_yx - offset) * scale
-        box_hw *= scale
-
-    box_mins = box_yx - (box_hw / 2.)
-    box_maxes = box_yx + (box_hw / 2.)
-    boxes = np.concatenate([box_mins[..., 0:1], box_mins[..., 1:2], box_maxes[..., 0:1], box_maxes[..., 1:2]], axis=-1)
-    boxes *= np.concatenate([image_shape, image_shape], axis=-1)
-    return boxes
 
 
 if __name__ == '__main__':
@@ -87,24 +68,23 @@ if __name__ == '__main__':
     pred_xys = pred[:, 22:]
 
     keep = pred_hms.max(-1).values > 0.3
-
     hms = pred_hms[keep]
     whs = pred_whs[keep]
     xys = pred_xys[keep]
     scores, labels = torch.max(hms, 1)
-    # 在一维数组中找到指定元素的索引
     idx = torch.nonzero(keep == True).squeeze()
     score = hms.argmax()
     xys[:, 0] += idx % 128
     xys[:, 1] += idx / 128
-
     left = (xys[:, 0] - whs[:, 0] / 2) * image_o_size[1] / 128
+    print(left)
     top = (xys[:, 1] - whs[:, 1] / 2) * image_o_size[0] / 128
     right = (xys[:, 0] + whs[:, 0] / 2) * image_o_size[1] / 128
     bottom = (xys[:, 1] + whs[:, 1] / 2) * image_o_size[0] / 128
     bboxs = torch.stack((left, top, right, bottom), dim=1)
     nms_keep = nms(bboxs, scores, iou_threshold=0.5)
     bboxs = bboxs[nms_keep]
+    # print(scores)
     for bbox, label, score in zip(bboxs, labels, scores):
         cv2.rectangle(image_o, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
         cv2.putText(image_o, CLASSES[label] + ':' + str(float(score))[0:4], (int(bbox[0]), int(bbox[1])), cv2.FONT_HERSHEY_SIMPLEX,

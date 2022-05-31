@@ -1,7 +1,7 @@
-onnx2trt/objs/*
-onnx2trt/build/*
-onnx2trt/workspace/pro
-onnx2trt/workspace/demo_infer
+trt_cpp/objs/*
+trt_cpp/build/*
+trt_cpp/workspace/pro
+trt_cpp/workspace/demo_infer
 *.trtmodel
 *.pth
 *.onnx
@@ -11,3 +11,6 @@ onnx2trt/workspace/demo_infer
 *.__pycache__
 *.pyengine
 *.vscode
+*.log
+*.cmake
+*.pyc

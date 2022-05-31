@@ -67,6 +67,12 @@
         "typeinfo": "cpp",
         "hash_map": "cpp",
         "hash_set": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "__nullptr": "cpp",
+        "__node_handle": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }

@@ -140,6 +140,10 @@ objs/main.cpp.o: src/main.cpp /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/9/bits/c++io.h \
  /usr/include/c++/9/bits/fstream.tcc src/trt/demo-infer/demo-infer.hpp \
+ /usr/include/c++/9/vector /usr/include/c++/9/bits/stl_construct.h \
+ /usr/include/c++/9/bits/stl_uninitialized.h \
+ /usr/include/c++/9/bits/stl_vector.h \
+ /usr/include/c++/9/bits/stl_bvector.h /usr/include/c++/9/bits/vector.tcc \
  src/trt/common/basic_tools.hpp \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT/NvInfer.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT/NvInferLegacyDims.h \
@@ -148,11 +152,7 @@ objs/main.cpp.o: src/main.cpp /usr/include/stdc-predef.h \
  /usr/include/c++/9/cstddef \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT/NvInferRuntime.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT/NvInferImpl.h \
- src/onnx-tensorrt/NvOnnxParser.h /usr/include/c++/9/vector \
- /usr/include/c++/9/bits/stl_construct.h \
- /usr/include/c++/9/bits/stl_uninitialized.h \
- /usr/include/c++/9/bits/stl_vector.h \
- /usr/include/c++/9/bits/stl_bvector.h /usr/include/c++/9/bits/vector.tcc \
+ src/onnx-tensorrt/NvOnnxParser.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/tensorRT/NvInferRuntime.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda/cuda_runtime.h \
  /home/rex/miniconda3/lib/python3.9/site-packages/trtpy/trt8cuda112cudnn8/include/cuda/crt/host_config.h \
