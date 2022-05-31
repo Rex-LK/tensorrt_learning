@@ -16,3 +16,4 @@ trt_cpp/workspace/demo_infer
 *.log
 *.cmake
 *.pyc
+*.vscode
