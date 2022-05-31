@@ -1,5 +1,7 @@
-trt_cpp/objs/*
-trt_cpp/build/*
+trt_cpp/objs/
+*.o
+*.mk
+trt_cpp/build/
 trt_cpp/workspace/pro
 trt_cpp/workspace/demo_infer
 *.trtmodel
