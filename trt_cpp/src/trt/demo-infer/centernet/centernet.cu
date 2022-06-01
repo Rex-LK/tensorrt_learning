@@ -36,8 +36,7 @@ static __global__ void decode_kernel(
         return;
     float* pwhxy = pitem;
     
-    //position有问题
-    printf("%d\n",position);
+
 
     float width      = *(pwhxy+20);
     float height     = *(pwhxy+21);
@@ -183,15 +182,34 @@ vector<bbox> gpu_decode(float* predict, int rows, int cols,int im_h,int im_w, fl
 }
 
 void Centernet::centernet_inference_gpu(){
-
-    auto image = imread("1");
+    auto engine = TRT::load_infer("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/centernet.trtmodel");
+    if(!engine){
+        printf("load engine failed \n");
+        return;
+    }
+    auto input       = engine->input();
+    auto output      = engine->output();
+    int input_width  = input->width();
+    int input_height = input->height();
+    float mean[] = {0.40789655, 0.44719303, 0.47026116};
+    float std[]  = {0.2886383, 0.27408165, 0.27809834};
+    auto image = imread("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/street.jpg");
     auto img_o = image.clone();
     int img_w = image.cols;
     int img_h = image.rows;
-    //centernet_gpu_decode
-    TRT::Tensor tensor;
-    tensor.load_from_file("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/centernet.tensor");
-    float* predict = tensor.cpu<float>();
+    resize(image, image, Size(input_width, input_height));
+    image.convertTo(image, CV_32F);
+
+    Mat channel_based[3];
+    for(int i = 0; i < 3; ++i)
+        channel_based[i] = Mat(input_height, input_width, CV_32F, input->cpu<float>(0, 2-i));
+
+    split(image, channel_based);
+    for(int i = 0; i < 3; ++i)
+        channel_based[i] = (channel_based[i] / 255.0f - mean[i]) / std[i];
+
+    engine->forward(true);
+    float* predict = output->cpu<float>();
     int rows = 128*128;
     int cols = 24;
     auto bboxes = gpu_decode(predict,rows,cols,img_h,img_w);
@@ -201,10 +219,9 @@ void Centernet::centernet_inference_gpu(){
         int y1 = box.top;
         int x2 = box.right;
         int y2 = box.bottom;
-        rectangle(image, Point(x1, y1), Point(x2, y2), Scalar(0, 0, 255),4);
+        rectangle(img_o, Point(x1, y1), Point(x2, y2), Scalar(0, 0, 255),4);
     }
-    // imshow("image",image);
-    // waitKey(0);
+    imwrite("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/centernet-gpu-pred.jpg", img_o);
 
 }
 
@@ -242,7 +259,6 @@ void Centernet::centernet_inference(){
     int num = 20;  
     float *start = prob;
     int count = output->count();
-    output->save_to_file("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/centernet.tensor");
      vector<bbox> boxes;
     for(int i=0;i<count;i+=24){
         //现在有128*128个点  就有128*128行，每行24个，前20个为类别，后四个为 w,h,x,y
