@@ -18,6 +18,8 @@
 
 ### https://www.bilibili.com/video/BV1yA411M7T4?spm_id_from=333.999.0.0
 
+### 2022-06-1:优化了代码存放的文件夹，便于以后进行回溯和分类
+
 ### 2022-05-30:增加了cuda-python-tensorrt的推理方式
 
 ### onnx2trt:/build_engine/batch_1/build_engine_single_image.py
