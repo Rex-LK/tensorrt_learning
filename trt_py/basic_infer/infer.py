@@ -2,7 +2,29 @@ from cuda import cudart
 import tensorrt as trt
 import numpy as np
 import cv2
-import threading
+import cupy as cp
+import torch
+from basic_infer import transforms
+
+def inv_mat(M):
+    k = M[0, 0],
+    b1 = M[0, 2]
+    b2 = M[1, 2],
+    return np.array([[1 / k[0], 0, -b1 / k[0]],
+                     [0, 1 / k[0], -b2[0] / k[0]]])
+
+
+def image_transfer(image, dst_size):
+    oh, ow = image.shape[:2]
+    dh, dw = dst_size
+    scale = min(dw / ow, dh / oh)
+
+    M = np.array([
+        [scale, 0, -scale * ow * 0.5 + dw * 0.5],
+        [0, scale, -scale * oh * 0.5 + dh * 0.5]
+    ])
+    return cv2.warpAffine(image, M, dst_size), M, inv_mat(M)
+
 
 class Infer_bacis():
     def __init__(self, engine_file_path, batch_size):
@@ -38,7 +60,7 @@ class Infer_bacis():
 
     def detect(self, image):
 
-        # 从这里可以看出 出batch推理有问题,只有第一张图片有结果
+        # 从这里可以看出 batch推理有问题,只有第一张图片有结果
         # image[0] = image[1]
         batch_input_image = np.ascontiguousarray(image)
         np.copyto(self.host_inputs[0], batch_input_image.ravel())
@@ -53,7 +75,6 @@ class Infer_bacis():
         output = self.host_outputs[0]
         return output
 
-
     def destroy(self):
         cudart.cudaStreamDestroy(self.stream)
         cudart.cudaFree(self.cuda_inputs[0])
@@ -64,11 +85,10 @@ class Infer_bacis():
 # 2、需要记录原图的大小,以及原图，便于后处理
 
 
-def image_resize_pro(image_o, image_o_size, imagenet_mean, imagenet_std):
-    image_input = cv2.resize(image_o, image_o_size)  # resize
+def image_resize_pro(image_o, image_d_size, imagenet_mean, imagenet_std):
+    image_input = cv2.resize(image_o, image_d_size)  # resize
     image_input = image_input[..., ::-1]  # BGR -> RGB
-    image_input = image_input / 255.0
-    image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
+    image_input = (image_input / 255.0 - imagenet_mean) / imagenet_std  # normalize
     image_input = image_input.astype(np.float32)  # float64 -> float32
     image_input = image_input.transpose(2, 0, 1)  # HWC -> CHW
     image_input = np.ascontiguousarray(image_input)  # contiguous array memory
@@ -76,5 +96,28 @@ def image_resize_pro(image_o, image_o_size, imagenet_mean, imagenet_std):
     return image_input
 
 
-def image_warpaffine(self):
-    ...
+def image_warpaffine_pro(image_o, image_d_size, imagenet_mean, imagenet_std):
+    img_d, M, inv = image_transfer(image_o, image_d_size)
+    # 加速
+    image_input = img_d[..., ::-1]  # BGR -> RGB
+    image_input = image_input / 255.0
+    image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
+    image_input = image_input.astype(np.float32)  # float64 -> float32
+    image_input = image_input.transpose(2, 0, 1)  # HWC -> CHW
+    image_input = image_input[None, ...]  # CHW -> 1CHW
+
+    return image_input, M, inv
+
+
+class image_torchvision_pro():
+    def __init__(self, image_d_size, imagenet_mean, imagenet_std):
+        self.image_transform = transforms.Compose([
+            transforms.AffineTransform(scale=(1, 1), fixed_size=image_d_size),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+        ])
+
+    def pro(self, image):
+        image_input, target = self.image_transform(image, {"box": [0, 0, image.shape[1] - 1, image.shape[0] - 1]})
+        image_input = torch.unsqueeze(image_input, dim=0)
+        return image_input, target

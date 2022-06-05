@@ -8,6 +8,7 @@
 #include<demo-infer/vit/vit.h>
 
 
+
 class demoInfer
 {
 public:
@@ -19,7 +20,7 @@ public:
         if(demo_name=="unet"){
             Unet::unet_inference();
         }
-        
+
         else if(demo_name == "load_from_py"){
             // load_from_py();
         }
@@ -40,6 +41,9 @@ public:
         }
         else if(demo_name == "hrnet"){
             Hrnet::hrnet_inference();
+        }
+        else if(demo_name == "hrnet_gpu"){
+            Hrnet::hrnet_inference_gpu();
         }
     }
 };

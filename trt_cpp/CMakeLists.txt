@@ -26,8 +26,7 @@ include_directories(
     ${CUDNN_DIR}/include
 )
 
-# 切记，protobuf的lib目录一定要比tensorRT目录前面，因为tensorRTlib下带有protobuf的so文件
-# 这可能带来错误
+
 link_directories(
     ${PROTOBUF_DIR}/lib
     ${TENSORRT_DIR}/lib
@@ -55,9 +54,3 @@ target_link_libraries(demo_infer protobuf pthread plugin_list)
 target_link_libraries(demo_infer ${OpenCV_LIBS})
 
 
-add_custom_target(
-    yolo
-    DEPENDS demo_infer
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/workspace
-    COMMAND ./demo_infer yolo
-)

@@ -66,7 +66,7 @@ if __name__ == '__main__':
     pred_hms = pred[:, 0:20]
     pred_whs = pred[:, 20:22]
     pred_xys = pred[:, 22:]
-
+    print(pred_hms.shape)
     keep = pred_hms.max(-1).values > 0.3
     hms = pred_hms[keep]
     whs = pred_whs[keep]

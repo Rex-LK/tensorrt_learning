@@ -18,8 +18,7 @@ if __name__ == "__main__":
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img_tensor, target = data_transform(img, {"box": [0, 0, img.shape[1] - 1, img.shape[0] - 1]})
     img_tensor = torch.unsqueeze(img_tensor, dim=0)
-
-    session = onnxruntime.InferenceSession("hrnet.onnx", providers=["CPUExecutionProvider"])
+    session = onnxruntime.InferenceSession("/home/rex/Desktop/cv_demo/cv_model/hrnet/hrnet.onnx", providers=["CPUExecutionProvider"])
     pred = session.run(["predict"], {"image": img_tensor.numpy()})[0]
-    print(pred.shape)
+    print(pred)
 

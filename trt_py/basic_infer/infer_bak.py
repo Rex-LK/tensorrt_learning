@@ -2,6 +2,30 @@ from cuda import cudart
 import tensorrt as trt
 import numpy as np
 import cv2
+import cupy as cp
+
+
+def inv_mat(M):
+    k = M[0, 0],
+    b1 = M[0, 2]
+    b2 = M[1, 2],
+    return np.array([[1 / k[0], 0, -b1 / k[0]],
+                     [0, 1 / k[0], -b2[0] / k[0]]])
+
+
+def image_transfer(image, dst_size):
+    oh, ow = image.shape[:2]
+    dh, dw = dst_size
+    scale = min(dw / ow, dh / oh)
+
+    M = np.array([
+        [scale, 0, -scale * ow * 0.5 + dw * 0.5],
+        [0, scale, -scale * oh * 0.5 + dh * 0.5]
+    ])
+    return cv2.warpAffine(image, M, dst_size), M, inv_mat(M)
+
+
+
 
 
 class Infer_bacis():
@@ -18,11 +42,13 @@ class Infer_bacis():
         self.cuda_outputs = []
         self.bindings = []
         self.batch_size = batch_size
-        assert self.batch_size <= engine.max_batch_size
+        # self.context.set_binding_shape(0, (self.batch_size, 3, 800, 1066))
+        # assert self.batch_size <= engine.max_batch_size
         for binding in engine:
-            size = trt.volume(engine.get_binding_shape(binding)) * self.batch_size
+            size = abs(trt.volume(engine.get_binding_shape(binding))) * self.batch_size
             dtype = trt.nptype(engine.get_binding_dtype(binding))
             host_mem = np.empty(size, dtype=dtype)
+            # 19000
             _, cuda_mem = cudart.cudaMallocAsync(host_mem.nbytes, self.stream)
             self.bindings.append(int(cuda_mem))
             if engine.binding_is_input(binding):
@@ -35,12 +61,15 @@ class Infer_bacis():
                 self.cuda_outputs.append(cuda_mem)
 
     def detect(self, image):
+
+        # 从这里可以看出 出batch推理有问题,只有第一张图片有结果
+        # image[0] = image[1]
         batch_input_image = np.ascontiguousarray(image)
         np.copyto(self.host_inputs[0], batch_input_image.ravel())
         cudart.cudaMemcpyAsync(self.cuda_inputs[0], self.host_inputs[0].ctypes.data, self.host_inputs[0].nbytes,
                                cudart.cudaMemcpyKind.cudaMemcpyHostToDevice, self.stream)
 
-        self.context.execute_async(batch_size=self.batch_size, bindings=self.bindings, stream_handle=self.stream)
+        self.context.execute_async_v2(bindings=self.bindings, stream_handle=self.stream)
 
         cudart.cudaMemcpyAsync(self.host_outputs[0].ctypes.data, self.cuda_outputs[0], self.host_outputs[0].nbytes,
                                cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, self.stream)
@@ -48,19 +77,6 @@ class Infer_bacis():
         output = self.host_outputs[0]
         return output
 
-    def detect_batch_image(self, image):
-        batch_input_image = np.ascontiguousarray(image)
-        np.copyto(self.host_inputs[0], batch_input_image.ravel())
-        cudart.cudaMemcpyAsync(self.cuda_inputs[0], self.host_inputs[0].ctypes.data, self.host_inputs[0].nbytes,
-                               cudart.cudaMemcpyKind.cudaMemcpyHostToDevice, self.stream)
-
-        self.context.execute_async(batch_size=self.batch_size, bindings=self.bindings, stream_handle=self.stream)
-
-        cudart.cudaMemcpyAsync(self.host_outputs[0].ctypes.data, self.cuda_outputs[0], self.host_outputs[0].nbytes,
-                               cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, self.stream)
-        cudart.cudaStreamSynchronize(self.stream)
-        output = self.host_outputs[0]
-        return output
 
     def destroy(self):
         cudart.cudaStreamDestroy(self.stream)
@@ -84,5 +100,15 @@ def image_resize_pro(image_o, image_o_size, imagenet_mean, imagenet_std):
     return image_input
 
 
-def image_warpaffine(self):
-    ...
+def image_warpaffine_pro(image_o, image_o_size, imagenet_mean, imagenet_std):
+    img_d, M, inv = image_transfer(image_o, image_o_size)
+    #加速
+    image_input = cp.asarray(img_d)
+    image_input = image_input[..., ::-1]  # BGR -> RGB
+    image_input = image_input / 255.0
+    image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
+    image_input = image_input.astype(np.float32)  # float64 -> float32
+    image_input = image_input.transpose(2, 0, 1)  # HWC -> CHW
+    image_input = image_input[None, ...]  # CHW -> 1CHW
+
+    return image_input, M, inv

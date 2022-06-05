@@ -59,9 +59,12 @@ def predict_single_person():
     # read single-person image
     img = cv2.imread(img_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    print(img.shape[1] - 1)
+    print(img.shape[0] - 1)
     img_tensor, target = data_transform(img, {"box": [0, 0, img.shape[1] - 1, img.shape[0] - 1]})
-    img_tensor = torch.unsqueeze(img_tensor, dim=0)
     print(img_tensor.shape)
+    print(target["reverse_trans"])
+    img_tensor = torch.unsqueeze(img_tensor, dim=0)
     # create model
     # HRNet-W32: base_channel=32
     # HRNet-W48: base_channel=48
@@ -93,7 +96,6 @@ def predict_single_person():
             # https://github.com/leoxiaobin/deep-high-resolution-net.pytorch/issues/22
             flip_outputs[..., 1:] = flip_outputs.clone()[..., 0: -1]
             outputs = (outputs + flip_outputs) * 0.5
-
         keypoints, scores = transforms.get_final_preds(outputs, [target["reverse_trans"]], True)
         keypoints = np.squeeze(keypoints)
         scores = np.squeeze(scores)

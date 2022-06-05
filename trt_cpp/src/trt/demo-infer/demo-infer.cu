@@ -23,6 +23,8 @@ static const char* cocolabels[] = {
     "scissors", "teddy bear", "hair drier", "toothbrush"
 };
 
+
+
 void demoInfer::yolov5_inference(){
 
     auto image = cv::imread("rq.jpg");

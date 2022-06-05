@@ -31,9 +31,9 @@ def build_engine(onnx_file_path, engine_file_path, input_shape, TRT_LOGGER, max_
         return
 
 if __name__ == '__main__':
-    input_shape = [1, 3, 512, 512]
-    onnx_path = 'centernet.onnx'
-    pyengine_path = 'centernet.pyengine'
+    input_shape = [1, 3, 256, 192]
+    onnx_path = 'hrnet.onnx'
+    pyengine_path = 'hrnet.pyengine'
     max_batch_size = 1
     max_workspace_size = 30 # 1<<28
     TRT_LOGGER = trt.Logger()

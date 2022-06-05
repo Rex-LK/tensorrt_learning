@@ -7,6 +7,7 @@
 
 namespace Hrnet{
     void hrnet_inference();
+    void hrnet_inference_gpu();
 };
 
 

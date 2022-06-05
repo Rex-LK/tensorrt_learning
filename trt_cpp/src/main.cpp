@@ -8,12 +8,12 @@
 using namespace std;
                                                                                                                                                                                                                                                                         
 int main(){
-    //cmake和make是不同的路径
+    // cmake和make是不同的路径
     if(!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/centernet",1)){
         return -1;
     }
     demoInfer demo;
-    string demo_name = "centernet_gpu"; 
+    string demo_name = "hrnet_gpu"; 
     demo.do_infer(demo_name);
     return 0;
 }
