@@ -18,6 +18,8 @@
 
 ### https://www.bilibili.com/video/BV1yA411M7T4?spm_id_from=333.999.0.0
 
+### 2022-06-04:增加了hrnet人体关键点检测，使用cupy和torch两种后处理方式，同时在cpp中使用了gpu解码。
+
 ### 2022-06-1:优化了代码存放的文件夹，便于以后进行回溯和分类
 
 ### 2022-05-30:增加了cuda-python-tensorrt的推理方式
