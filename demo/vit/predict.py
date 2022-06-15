@@ -21,7 +21,7 @@ def main():
     img = data_transform(img)
     img = torch.unsqueeze(img, dim=0)
     model = create_model(num_classes=5, has_logits=False).to(device)
-    model_weight_path = "./weights/model-9.pth"
+    model_weight_path = "vit-model-9.pth"
     model.load_state_dict(torch.load(model_weight_path, map_location=device))
     model.eval()
     with torch.no_grad():

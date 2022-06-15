@@ -41,7 +41,7 @@ void Detr::detr_inference(){
     int input_height = input->height();
 
 
-    auto image = imread("cat.jpg");
+    auto image = imread("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/cat.jpg");
     auto img_o = image.clone();
     // imshow("test",image);
     // waitKey(0);
@@ -64,7 +64,7 @@ void Detr::detr_inference(){
     engine->forward(true);
     float* prob = output->cpu<float>();
     int prob_count = output->count()/output->batch();
-    // bool a = output->save_to_file("detr_cpp.tensor");
+    bool a = output->save_to_file("detr_cpp.tensor");
     int cols = 95;
     int num_class = 91;
     //这张图有100个结果，每个结果一行 每行95个元素,前91个元素为概率值,后四个为这个结果的框预测框

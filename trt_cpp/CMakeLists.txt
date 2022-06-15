@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 2.6)
 project(demo_trt)
 
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/workspace)
 set(HAS_PYTHON OFF)
 
-set(TENSORRT_DIR "/home/rex/TensorRT-8.2.0.6")
+set(TENSORRT_DIR "/home/rex/TensorRT-8.4.0.6")
 
 set(PROTOBUF_DIR "/usr/local/protobuf")
 

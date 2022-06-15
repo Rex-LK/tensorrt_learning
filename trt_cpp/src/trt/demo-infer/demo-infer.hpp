@@ -36,7 +36,7 @@ public:
         else if(demo_name == "vit"){
             Vit::vit_inference();
         }
-        else if(demo_name == "detr_sim"){
+        else if(demo_name == "detr"){
             Detr::detr_inference();
         }
         else if(demo_name == "hrnet"){

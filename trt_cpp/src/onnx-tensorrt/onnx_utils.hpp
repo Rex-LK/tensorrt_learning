@@ -15,18 +15,52 @@
 namespace
 {
 
-template <typename OnnxDims>
-bool convertOnnxDims(OnnxDims const& onnxDims, nvinfer1::Dims& trtDims)
+//! Describes occurrence of a named dimension.
+class NamedDimension
 {
-    std::vector<int> onnxDims_vector;
+public:
+    //! TensorRT tensor.
+    nvinfer1::ITensor* tensor;
+
+    //! Index of tensor dimension to be named.
+    int32_t index;
+
+    //! ONNX "dim param" that is the name of the dimension.
+    std::string dimParam;
+
+    //! Construct a NamedDimension where the tensor will be filled in later.
+    NamedDimension(int32_t index_, const std::string& dimParam_)
+        : tensor(nullptr)
+        , index(index_)
+        , dimParam(dimParam_)
+    {
+    }
+};
+
+template <typename OnnxDims>
+bool convertOnnxDims(OnnxDims const& onnxDims, nvinfer1::Dims& trtDims, std::vector<NamedDimension>& namedDims)
+{
+    std::vector<int32_t> onnxDimsVec;
     for (const auto& onnxDim : onnxDims)
     {
-        const int dim = onnxDim.dim_param() == "" ? (onnxDim.dim_value() >= 0 ? onnxDim.dim_value() : -1) : -1;
-        onnxDims_vector.emplace_back(dim);
+        // For empty dimensions, the ONNX specification says it's a dynamic dimension
+        if (!onnxDim.has_dim_value() && !onnxDim.has_dim_param())
+        {
+            onnxDimsVec.emplace_back(-1);
+        }
+        else
+        {
+            if (!onnxDim.dim_param().empty())
+            {
+                namedDims.emplace_back(static_cast<int32_t>(onnxDimsVec.size()), onnxDim.dim_param());
+            }
+            const int32_t dim = onnxDim.dim_param() == "" ? (onnxDim.dim_value() >= 0 ? onnxDim.dim_value() : -1) : -1;
+            onnxDimsVec.emplace_back(dim);
+        }
     }
-    trtDims.nbDims = onnxDims_vector.size();
+    trtDims.nbDims = onnxDimsVec.size();
     assert(trtDims.nbDims <= nvinfer1::Dims::MAX_DIMS);
-    std::copy(onnxDims_vector.begin(), onnxDims_vector.end(), trtDims.d);
+    std::copy(onnxDimsVec.begin(), onnxDimsVec.end(), trtDims.d);
     return true;
 }
 
@@ -117,8 +151,13 @@ inline bool ParseFromFile_WAR(google::protobuf::Message* msg, const char* filena
     google::protobuf::io::IstreamInputStream rawInput(&stream);
 
     google::protobuf::io::CodedInputStream coded_input(&rawInput);
+  #if GOOGLE_PROTOBUF_VERSION >= 3011000
+    // Starting Protobuf 3.11 accepts only single parameter.
+    coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max());
+  #else
     // Note: This WARs the very low default size limit (64MB)
     coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() / 4);
+  #endif
     return msg->ParseFromCodedStream(&coded_input);
 }
 

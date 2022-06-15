@@ -223,27 +223,100 @@ Status parseGraph(IImporterContext* ctx, const ::onnx::GraphProto& graph, bool d
     return Status::success();
 }
 
-Status importInput(ImporterContext* ctx, ::onnx::ValueInfoProto const& input, nvinfer1::ITensor** tensor)
+Status importInput(ImporterContext* ctx, ::onnx::ValueInfoProto const& input, nvinfer1::ITensor** tensor,
+    std::vector<NamedDimension>& namedDims)
 {
     auto const& onnxDtype = input.type().tensor_type();
     nvinfer1::DataType trtDtype;
     ASSERT_INPUT(convertDtype(onnxDtype.elem_type(), &trtDtype) && "Failed to convert ONNX date type to TensorRT data type.", ErrorCode::kUNSUPPORTED_NODE, input.name());
     nvinfer1::Dims trt_dims;
-    ASSERT_INPUT(convertOnnxDims(onnxDtype.shape().dim(), trt_dims) && "Failed to convert ONNX dimensions to TensorRT dimensions.", ErrorCode::kUNSUPPORTED_GRAPH, input.name());
+    size_t const oldNbNamedDimensions = namedDims.size();
+    ASSERT_INPUT(convertOnnxDims(onnxDtype.shape().dim(), trt_dims, namedDims) && "Failed to convert ONNX dimensions to TensorRT dimensions.", ErrorCode::kUNSUPPORTED_GRAPH, input.name());
     nvinfer1::ITensor* userInput = ctx->getUserInput(input.name().c_str());
     if (userInput)
     {
         ASSERT_INPUT(userInput && "User input is missing.", ErrorCode::kINVALID_VALUE, input.name());
-        // Note: We intentionally don't check dimensions/dtype here so that users can change the input shape/type if
-        // they want to.
+        // Intentionally don't check dimensions/dtype here so that users can change the input shape/type if
+        // they want to. However, equalities implied by dimension names are nonetheless respected.
         *tensor = userInput;
-        return Status::success();
+    }
+    else
+    {
+        LOG_VERBOSE(
+            "Adding network input: " << input.name() << " with dtype: " << trtDtype << ", dimensions: " << trt_dims);
+        *tensor = ctx->network()->addInput(input.name().c_str(), trtDtype, trt_dims);
+        ASSERT_INPUT(*tensor && "Failed to add input to the network.", ErrorCode::kUNSUPPORTED_NODE, input.name());
     }
 
-    LOG_VERBOSE(
-        "Adding network input: " << input.name() << " with dtype: " << trtDtype << ", dimensions: " << trt_dims);
-    ASSERT_INPUT( (*tensor = ctx->network()->addInput(input.name().c_str(), trtDtype, trt_dims)) && "Failed to add input to the network.",
-        ErrorCode::kUNSUPPORTED_NODE, input.name());
+    // Fill in field `tensor` for any dimensions that had names in the ONNX.
+    for (auto i = oldNbNamedDimensions; i < namedDims.size(); ++i)
+    {
+        namedDims[i].tensor = *tensor;
+    }
+    return Status::success();
+}
+
+//! Add equality assertions for dimensions with the same name.
+static Status assertDimsWithSameNameAreEqual(ImporterContext* ctx, std::vector<NamedDimension>& namedDims)
+{
+    // Cache for IShapeLayer
+    std::unordered_map<nvinfer1::ITensor const*, nvinfer1::IShapeLayer*> shapeMap;
+
+    // Sort records by name of dimension, using stable_sort for reproducibility.
+    std::stable_sort(namedDims.begin(), namedDims.end(),
+        [](const NamedDimension& x, const NamedDimension& y) { return x.dimParam < y.dimParam; });
+
+    // Each loop iteration covers a sequence of named dimensions with the same name.
+    // For each sequence, add IAssertionLayers that assert that the values are equal.
+    // TensorRT knows about transitive closure of equality, so just add the assertions
+    // for adjacent records.
+    decltype(namedDims.begin()) j;
+    for (auto i = namedDims.begin(); i < namedDims.end(); i = j)
+    {
+        // Walk j forward so that [i,j) is indices of named dimensions with the same name.
+        j = i;
+        do
+        {
+            ++j;
+        } while (j != namedDims.end() && j->dimParam == i->dimParam);
+
+        if (j - i < 2)
+        {
+            // Single occurrence of name is uninteresting.
+            continue;
+        }
+
+        std::ostringstream message;
+        message << "For input: '" << i->tensor->getName()
+                << "' all named dimensions that share the same name must be equal. Note: Named dimensions were present on the following axes: ";
+
+        // prev is the current end of the daisy chain.
+        nvinfer1::ITensor* prev = nullptr;
+        for (auto k = i; k < j; ++k)
+        {
+            message << (prev ? ", " : "") << k->index << " (name: "
+                    << "'" << k->dimParam << "')";
+
+            // Create ITensor "next" with dimension length for record k.
+            auto& shape = shapeMap[k->tensor];
+            if (shape == nullptr)
+            {
+                shape = ctx->network()->addShape(*k->tensor);
+            }
+            auto* slice = ctx->network()->addSlice(*shape->getOutput(0), {1, {k->index}}, {1, {1}}, {1, {1}});
+            nvinfer1::ITensor* next = slice->getOutput(0);
+
+            if (prev)
+            {
+                // Add a link to the chain.
+                auto* equal = ctx->network()->addElementWise(*prev, *next, nvinfer1::ElementWiseOperation::kEQUAL);
+                auto* assertion = ctx->network()->addAssertion(*equal->getOutput(0), message.str().c_str());
+                ASSERT(assertion != nullptr && "addAssertion failed", ErrorCode::kMODEL_DESERIALIZE_FAILED);
+            }
+            prev = next;
+        }
+    }
+
     return Status::success();
 }
 
@@ -258,19 +331,20 @@ Status importInputs(ImporterContext* ctx, ::onnx::GraphProto const& graph,
         initializers.emplace(initializer.name());
     }
 
+    std::vector<NamedDimension> namedDims;
     for (const ::onnx::ValueInfoProto& input : graph.input())
     {
         TensorOrWeights tensor;
         if (!initializers.count(input.name()))
         {
-            nvinfer1::ITensor* tensor_ptr;
-            CHECK(importInput(ctx, input, &tensor_ptr));
+            nvinfer1::ITensor* tensor_ptr{nullptr};
+            CHECK(importInput(ctx, input, &tensor_ptr, namedDims));
             tensor = tensor_ptr;
         }
         ctx->registerTensor(std::move(tensor), input.name());
     }
 
-    return Status::success();
+    return assertDimsWithSameNameAreEqual(ctx, namedDims);
 }
 
 Status deserialize_onnx_model(void const* serialized_onnx_model, size_t serialized_onnx_model_size,
@@ -284,8 +358,13 @@ Status deserialize_onnx_model(void const* serialized_onnx_model, size_t serializ
     else
     {
         google::protobuf::io::CodedInputStream coded_input(&raw_input);
+      #if GOOGLE_PROTOBUF_VERSION >= 3011000
+        // Starting Protobuf 3.11 accepts only single parameter.
+        coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max());
+      #else
         // Note: This WARs the very low default size limit (64MB)
         coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() / 4);
+      #endif
         ASSERT( (model->ParseFromCodedStream(&coded_input)) && "Failed to parse the ONNX model.", ErrorCode::kMODEL_DESERIALIZE_FAILED);
     }
     return Status::success();
@@ -301,8 +380,14 @@ Status deserialize_onnx_model(int fd, bool is_serialized_as_text, ::onnx::ModelP
     else
     {
         google::protobuf::io::CodedInputStream coded_input(&raw_input);
+      #if GOOGLE_PROTOBUF_VERSION >= 3011000
+        // Starting Protobuf 3.11 accepts only single parameter.
+        coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max());
+      #else
         // Note: This WARs the very low default size limit (64MB)
         coded_input.SetTotalBytesLimit(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() / 4);
+      #endif
+        // Note: This WARs the very low default size limit (64MB)
         ASSERT( (model->ParseFromCodedStream(&coded_input)) && "Failed to parse the ONNX model.", ErrorCode::kMODEL_DESERIALIZE_FAILED);
     }
     return Status::success();
@@ -370,28 +455,6 @@ bool ModelImporter::supportsModel(
         return false;
     };
 
-    auto checkShapeTensorType = [&ctx](::onnx::NodeProto const& node){
-        for (int i = 0; i < ctx->network()->getNbInputs(); i++)
-        {
-            auto input = ctx->network()->getInput(i);
-            if (input->isShapeTensor())
-            {
-                if (input->getType() == nvinfer1::DataType::kFLOAT || node.op_type() == "Loop" || node.op_type() == "Scan")
-                {
-                    auto name = input->getName();
-                    for (auto input : node.input())
-                    {
-                        if (input == name)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    };
-
     bool newSubGraph(true);
     // Sort and partition supported subgraphs
     std::vector<size_t> topological_order;
@@ -407,15 +470,11 @@ bool ModelImporter::supportsModel(
         // Add the node to the subgraph if:
         //     1. There is an importer function registered for the operator type
         //     2. It is not directly connected to an unsupported input
-        //     3. It is not directly connected to an unsupported shape tensor input
-        //     4. It did not illegally produce a shape tensor output
-        //     5. The importer function did not throw an assertion
+        //     3. The importer function did not throw an assertion
         bool registered = supportsOperator(node.op_type().c_str());
         bool unsupportedInput = (input_node.empty()) ? false : checkForInput(node);
-        bool unsupportedShapeType = checkShapeTensorType(node);
-        bool unsupportedShapeTensor = ctx->unsupportedShapeTensors().count(node.name()) > 0 ? true : false;
         bool unsuccessfulParse = node_idx == error_node;
-        if (registered && !unsupportedInput && !unsupportedShapeType && !unsupportedShapeTensor && !unsuccessfulParse)
+        if (registered && !unsupportedInput && !unsuccessfulParse)
         {
             if (newSubGraph)
             {
@@ -444,8 +503,19 @@ bool ModelImporter::supportsModel(
     return allSupported;
 }
 
+// Mark experimental ops as unsupported, mark plugin ops as supported
 bool ModelImporter::supportsOperator(const char* op_name) const
 {
+    auto is = [op_name](const char* name) { return std::strcmp(op_name, name) == 0; };
+
+    if (is("NonMaxSuppression"))
+    {
+        return false;
+    }
+    if (is("EfficientNMS_TRT") || is("PyramidROIAlign_TRT") || is("MultilevelCropAndResize_TRT"))
+    {
+        return true;
+    }
     return _op_importers.count(op_name);
 }
 
@@ -484,51 +554,16 @@ bool ModelImporter::parse(void const* serialized_onnx_model, size_t serialized_o
     return this->parseWithWeightDescriptors(serialized_onnx_model, serialized_onnx_model_size);
 }
 
-void removeShapeTensorCasts(IImporterContext* ctx)
-{
-    // Removes any casts on shape tensors, as TensorRT does not support them.
-    for (int i = 0, e = ctx->network()->getNbLayers(); i < e; ++i)
-    {
-        nvinfer1::ILayer* layer = ctx->network()->getLayer(i);
-        if (layer->getNbOutputs() > 0 && layer->getOutput(0)->isShapeTensor())
-        {
-            layer->resetOutputType(0);
-            nvinfer1::ITensor& t = *layer->getOutput(0);
-            // Assume that boolean tensors were not cast, and thus have their type correctly set.
-            const nvinfer1::DataType shapeTensorType = t.getType() == nvinfer1::DataType::kBOOL ? nvinfer1::DataType::kBOOL : nvinfer1::DataType::kINT32;
-            layer->setOutputType(0, shapeTensorType);
-            // Set type only if necessary, to avoid TensorRT warnings
-            // about setting type of non-input/output tensors.
-            if (t.getType() != shapeTensorType)
-            {
-                t.setType(shapeTensorType);
-            }
-            // Some layers do not support shape tensor outputs. Keep track of these tensor names
-            // for supportsModel().
-            auto type = layer->getType();
-            auto elementwiseOp = type == nvinfer1::LayerType::kELEMENTWISE ? (static_cast<nvinfer1::IElementWiseLayer*>(layer))->getOperation() : nvinfer1::ElementWiseOperation::kSUM;
-            auto reduceOp = type == nvinfer1::LayerType::kREDUCE ? (static_cast<nvinfer1::IReduceLayer*>(layer))->getOperation() : nvinfer1::ReduceOperation::kSUM;
-            auto fillOp = type == nvinfer1::LayerType::kFILL
-                ? (static_cast<nvinfer1::IFillLayer*>(layer))->getOperation()
-                : nvinfer1::FillOperation::kLINSPACE;
-            if (!supportsShapeTensor(type, elementwiseOp, reduceOp, fillOp))
-            {
-                auto name = layer->getName();
-                ctx->unsupportedShapeTensors().insert(name);
-                LOG_ERROR("Found unsupported shape-tensor producing layer:" << name);
-            }
-        }
-    }
-}
-
 Status ModelImporter::importModel(
     ::onnx::ModelProto const& model)
 {
     ASSERT(!_importer_ctx.network()->hasImplicitBatchDimension() && "This version of the ONNX parser only supports TensorRT INetworkDefinitions with an explicit batch dimension. Please ensure the network was created using the EXPLICIT_BATCH NetworkDefinitionCreationFlag.", ErrorCode::kINVALID_VALUE);
     auto* ctx = &_importer_ctx;
     _importer_ctx.clearOpsets();
+#if ENABLE_STD_PLUGIN
     // Initialize plugin registry
     initLibNvInferPlugins(static_cast<void*>(&ctx->logger()), "");
+#endif // ENABLE_STD_PLUGIN
     for (int i = 0; i < model.opset_import().size(); ++i)
     {
         std::string domain = model.opset_import(i).domain();
@@ -666,7 +701,6 @@ Status ModelImporter::importModel(
         }
     }
 
-    removeShapeTensorCasts(ctx);
     return Status::success();
 }
 
@@ -700,7 +734,12 @@ bool ModelImporter::parseFromFile(const char* onnxModelFile, int32_t verbosity)
 
     { //...Read input file, parse it
         std::ifstream onnx_file(onnxModelFile, std::ios::binary | std::ios::ate);
-        const std::streamsize file_size = onnx_file.tellg();
+        auto const file_size = onnx_file.tellg();
+        if (-1 == file_size)
+        {
+            LOG_ERROR("File size error (possibly the path points to a directory): " << onnxModelFile);
+            return false;
+        }
         onnx_file.seekg(0, std::ios::beg);
         std::vector<char> onnx_buf(file_size);
         if (!onnx_file.read(onnx_buf.data(), onnx_buf.size()))

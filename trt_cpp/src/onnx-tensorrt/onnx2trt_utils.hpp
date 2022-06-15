@@ -14,15 +14,18 @@
 
 #include <cstring> // For std::memcpy
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <sstream>
-#include <limits>
+#include <typeindex>
+#include <unordered_map>
 
 #define LOG(msg, severity)                                                                                             \
     do                                                                                                                 \
     {                                                                                                                  \
         std::stringstream ss{};                                                                                        \
-        if (severity <= nvinfer1::ILogger::Severity::kWARNING) ss << __FILENAME__ << ":" << __LINE__ << ": ";          \
+        if (severity <= nvinfer1::ILogger::Severity::kWARNING)                                                         \
+            ss << __FILENAME__ << ":" << __LINE__ << ": ";                                                             \
         ss << msg;                                                                                                     \
         ctx->logger().log(severity, ss.str().c_str());                                                                 \
     } while (0)
@@ -98,7 +101,9 @@ inline nvinfer1::IConstantLayer* addConstantScalar(
     assert(volume(shape) == 1 && "Cannot add constant scalar with a shape that has volume > 1");
     ShapedWeights scalarWeights = ctx->createTempWeights(type, shape);
     static_cast<ScalarType*>(scalarWeights.values)[0] = static_cast<ScalarType>(scalar);
-    return ctx->network()->addConstant(scalarWeights.shape, scalarWeights);
+    nvinfer1::IConstantLayer* l = ctx->network()->addConstant(scalarWeights.shape, scalarWeights);
+    ctx->network()->setWeightsName(scalarWeights, scalarWeights.getName());
+    return l;
 }
 
 // Helper function to create a tensor given a vector of values and a shape.
@@ -110,7 +115,9 @@ inline nvinfer1::IConstantLayer* addConstant(
     assert(sizeof(ScalarType) == getDtypeSize(type) && "ONNX dtype does not have the same size as the value type");
     ShapedWeights weights = ctx->createTempWeights(type, shape);
     std::memcpy(weights.values, values.data(), values.size() * sizeof(ScalarType));
-    return ctx->network()->addConstant(weights.shape, weights);
+    nvinfer1::IConstantLayer* l = ctx->network()->addConstant(weights.shape, weights);
+    ctx->network()->setWeightsName(weights, weights.getName());
+    return l;
 }
 
 enum ScaleOp
@@ -148,11 +155,11 @@ Status isBroadcastValid(IImporterContext* ctx, const nvinfer1::Dims& firstShape,
 std::vector<int32_t> calculateBias(
     const nvinfer1::Dims& daDims, const nvinfer1::Dims& idxDims, const std::vector<int32_t>& pitches, int32_t axis);
 
-// Helper function to calculate and return a vector representation of the pitches of a given shape
-std::vector<int32_t> calculatePitches(const nvinfer1::Dims& inputDims);
-
 // Helper function to check that linear resize can be used
 bool canUseLinearResize(const size_t scaleSize, const float* scaleFactors);
+
+// Helper function to calculate and return a vector representation of the pitches of a given shape
+std::vector<int32_t> calculatePitches(const nvinfer1::Dims& inputDims);
 
 // Helper function to add a Cast layer in the network
 nvinfer1::ITensor* castHelper(IImporterContext* ctx, nvinfer1::ITensor* input, nvinfer1::DataType dtype);
@@ -170,11 +177,9 @@ bool convertDtype(int32_t onnx_dtype, nvinfer1::DataType* trt_dtype);
 // Helper function to convert INT64 weight values into INT32
 int32_t* convertINT64(const int64_t* weightValues, nvinfer1::Dims shape, IImporterContext* ctx);
 
-// Helper function to convert negative gather indices into non-negative indices.
-nvinfer1::ITensor* convertGatherIndices(IImporterContext* ctx, nvinfer1::ITensor* data, nvinfer1::ITensor* indices, int32_t axis);
-
-// Helper function to convert ONNX padding into TRT padding. Will update begPadding, endPadding, firstPerm, and secondPerm by reference
-bool convertOnnxPadding(std::vector<int64_t>& onnxPadding, nvinfer1::Dims2& begPadding, nvinfer1::Dims2& endPadding, nvinfer1::Permutation& firstPerm, nvinfer1::Permutation& secondPerm);
+// Helper function to convert ONNX padding into TRT padding. Will update startTensor and totalPaddingTensor by reference
+bool convertOnnxPadding(IImporterContext* ctx, int32_t nbInputDims, const std::vector<int32_t>& onnxPadding,
+    nvinfer1::ITensor*& startTensor, nvinfer1::ITensor*& totalPaddingTensor);
 
 // Helper function to check if all of the values in the shift tensor are zeros
 bool shiftIsAllZeros(const ShapedWeights& shiftInt8);
@@ -189,9 +194,9 @@ nvinfer1::ITensor* createZeroTensor(IImporterContext* ctx, nvinfer1::ITensor* da
 bool convertOnnxWeights(
     const ::onnx::TensorProto& onnxTensor, onnx2trt::ShapedWeights* weights, IImporterContext* ctx);
 
-// Helper function to convert multi input convolution/deconvolution
-NodeImportResult convDeconvMultiInput(
-    IImporterContext* ctx, const ::onnx::NodeProto& node, std::vector<TensorOrWeights>& inputs, bool isConv);
+// Helper function to convert multi input convolution
+NodeImportResult convMultiInput(
+    IImporterContext* ctx, const ::onnx::NodeProto& node, std::vector<TensorOrWeights>& inputs);
 
 // Helper function to convert a 1D tensor into a scalar
 nvinfer1::ITensor* convertToScalar(IImporterContext* ctx, nvinfer1::ITensor* inpTensor);
@@ -210,7 +215,7 @@ bool elementwiseCheck(const std::vector<TensorOrWeights>& inputs, const nvinfer1
 
 // Helper function to import an ONNX elementwise op into TRT
 NodeImportResult elementwiseHelper(IImporterContext* ctx, ::onnx::NodeProto const& node,
-    std::vector<TensorOrWeights>& inputs, nvinfer1::ElementWiseOperation binary_op);
+    const std::vector<TensorOrWeights>& inputs, nvinfer1::ElementWiseOperation binary_op);
 
 // Helper function to flatten a tensor on a given axis
 nvinfer1::ITensor* flattenTensor(IImporterContext* ctx, ::onnx::NodeProto const& node, nvinfer1::ITensor& tensor, int axis = 0, bool regLayer = false);
@@ -277,6 +282,10 @@ NodeImportResult lstmLegacyImporter(
 // Helper function to create and fill a Dims object with defined values
 nvinfer1::Dims makeDims(int nbDims, int val);
 
+// Helper function to parse activation values for LSTM nodes
+std::vector<float> parseLSTMActivationValues(const std::vector<nvinfer1::ActivationType>& activationTypes,
+    const std::vector<float>& activationValues, bool isAlpha);
+
 // Helper function to read weights from an external file
 bool parseExternalWeights(IImporterContext* ctx, std::string file, std::string path, int64_t offset, int64_t length,
     std::vector<char>& weightsBuf, size_t& size);
@@ -305,10 +314,6 @@ void setAttr(
 nvinfer1::ITensor* sliceAcrossAxis(
     IImporterContext* ctx, const ::onnx::NodeProto& node, nvinfer1::ITensor* data, const int axis);
 
-// Helper function to filter out shape tensor outputs for layers that do not support it
-bool supportsShapeTensor(nvinfer1::LayerType type, nvinfer1::ElementWiseOperation eleOp,
-    nvinfer1::ReduceOperation redOp, nvinfer1::FillOperation fillOp);
-
 // Helper function to squeeze a tensor on a given set of axes
 nvinfer1::ITensor* squeezeTensor(IImporterContext* ctx, const ::onnx::NodeProto& node, nvinfer1::ITensor& tensor, const std::vector<int>& axes, bool regLayer = false);
 
@@ -323,6 +328,10 @@ NodeImportResult unaryHelper(IImporterContext* ctx, const ::onnx::NodeProto& nod
 // Helper function to unsqueeze tensors on a given set of axes
 nvinfer1::ITensor* unsqueezeTensor(IImporterContext* ctx, const ::onnx::NodeProto& node,
     nvinfer1::ITensor& tensor, const std::vector<int>& axes, bool regLayer = false);
+
+// Helper function to calculate and return the expected output shape of a resize given the resize scale weights or scale
+// tensor.
+nvinfer1::ITensor* resizeShapeTensor(IImporterContext* ctx, nvinfer1::ITensor& input, TensorOrWeights& scales);
 
 // Helper function to convert a ShapedWeights object into a vector
 template <typename WeightType>
@@ -352,6 +361,40 @@ Status weightsToVector(TensorOrWeights weights, std::vector<WeightType>* weightV
     return Status(ErrorCode::kSUCCESS);
 }
 
+template <typename T>
+ShapedWeights::DataType getShapeWeightsDataType()
+{
+    static const std::unordered_map<std::type_index, ::onnx::TensorProto::DataType> tMap(
+        {{std::type_index(typeid(bool)), ::onnx::TensorProto::BOOL},
+            {std::type_index(typeid(int8_t)), ::onnx::TensorProto::INT8},
+            {std::type_index(typeid(uint8_t)), ::onnx::TensorProto::UINT8},
+            {std::type_index(typeid(int16_t)), ::onnx::TensorProto::INT16},
+            {std::type_index(typeid(uint16_t)), ::onnx::TensorProto::UINT16},
+            {std::type_index(typeid(int32_t)), ::onnx::TensorProto::INT32},
+            {std::type_index(typeid(uint32_t)), ::onnx::TensorProto::UINT32},
+            {std::type_index(typeid(int64_t)), ::onnx::TensorProto::INT64},
+            {std::type_index(typeid(uint64_t)), ::onnx::TensorProto::UINT64},
+            {std::type_index(typeid(float)), ::onnx::TensorProto::FLOAT},
+            {std::type_index(typeid(double)), ::onnx::TensorProto::DOUBLE}});
+
+    if (tMap.find(std::type_index(typeid(T))) != tMap.end())
+    {
+        return tMap.at(std::type_index(typeid(T)));
+    }
+    return ::onnx::TensorProto::UNDEFINED;
+}
+
+// Helper function to convert a vector object into a ShapedWeights object
+template <typename T>
+Status vectorToWeights(std::vector<T>& weightVector, TensorOrWeights* weights)
+{
+    nvinfer1::Dims shape{1, {static_cast<int32_t>(weightVector.size())}};
+    ShapedWeights::DataType dtype = getShapeWeightsDataType<T>();
+    ASSERT(dtype != ::onnx::TensorProto::UNDEFINED && "Unsupported datatype", ErrorCode::kINVALID_VALUE);
+    *weights = ShapedWeights(dtype, weightVector.data(), shape);
+    return Status(ErrorCode::kSUCCESS);
+}
+
 // Helper function to convert ONNX node name. If no node name, using name of first output.
 const std::string getNodeName(const ::onnx::NodeProto& node);
 
@@ -369,5 +412,9 @@ ShapeTensor axesToInterlaceSubscripts(const ShapeTensor& axes, int nbDims);
 
 //! Helper function to add SoftMax layer.
 nvinfer1::ITensor* addSoftmax(IImporterContext* ctx, const ::onnx::NodeProto& node, nvinfer1::ITensor& input);
+
+// Helper function to import ONNX scatter nodes into TRT
+NodeImportResult addScatterLayer(
+    IImporterContext* ctx, const ::onnx::NodeProto& node, std::vector<TensorOrWeights>& inputs, nvinfer1::ScatterMode mode, int32_t axis = 0);
 
 } // namespace onnx2trt
