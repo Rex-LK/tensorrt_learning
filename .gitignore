@@ -18,3 +18,5 @@ trt_cpp/workspace/demo_infer
 *.pyc
 *.vscode
 *.idea
+*.pt
+*.jpg

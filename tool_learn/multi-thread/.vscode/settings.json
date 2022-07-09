@@ -10,6 +10,8 @@
         "functional": "cpp",
         "tuple": "cpp",
         "utility": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "iostream": "cpp",
+        "queue": "cpp"
     }
 }

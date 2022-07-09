@@ -1,6 +1,9 @@
 import cv2
 from basic_infer.infer import Infer_bacis, image_resize_pro
 import torch
+import sys
+sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py")
+
 from torch import nn
 import numpy as np
 from torchvision.ops import nms

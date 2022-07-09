@@ -4,6 +4,8 @@ import torch
 import numpy as np
 import cupy as cp
 import time
+import sys
+sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py")
 
 
 def load_tensor(file):

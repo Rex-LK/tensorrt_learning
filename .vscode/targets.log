@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jun 15 09:36:21 2022
+# Make data base, printed on Tue Jun 21 23:19:20 2022
 
 # Variables
 
@@ -45,7 +47,7 @@ VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_languagePackId":"42e84e0914b17800d483f69e299e1b00.zh-cn","_translationsConfigFile":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/tcf.json","_cacheRoot":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn","_resolvedLanguagePackCoreLocation":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/da15b6fd3ef856477bf6f4fb29ba1b7af717770d","_corruptedFile":"/home/rex/.config/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/corrupted.info","_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:50004
+JOURNAL_STREAM = 8:60490
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # makefile
@@ -65,7 +67,7 @@ XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/d
 # environment
 ROS_ETC_DIR = /opt/ros/noetic/etc/ros
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=27eacccfb631a6a591943c5a629d524c
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=54940de8301a8fdb3f6c324962ab221c
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
@@ -73,7 +75,7 @@ _ = /usr/bin/code
 # environment
 ROS_PACKAGE_PATH = /opt/ros/noetic/share
 # environment
-MANAGERPID = 2133
+MANAGERPID = 2132
 # environment
 ROS_PYTHON_VERSION = 3
 # environment
@@ -93,7 +95,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/rex:@/tmp/.ICE-unix/2412,unix/rex:/tmp/.ICE-unix/2412
+SESSION_MANAGER = local/rex:@/tmp/.ICE-unix/2416,unix/rex:/tmp/.ICE-unix/2416
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -105,7 +107,7 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = e24ce85749f24a9fa112e1a4f8e1012d
+INVOCATION_ID = dd301725d4a2448bacd0a94630ae9550
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -131,7 +133,7 @@ PWD = /home/rex/Desktop/tensorrt_learning
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2330
+SSH_AGENT_PID = 2334
 # environment
 PKG_CONFIG_PATH = /opt/ros/noetic/lib/pkgconfig
 # environment
@@ -179,7 +181,7 @@ SHLVL = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-5e9048fa-0923-4b3b-a171-151991dc0a35.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-1b17f8ff-5bb2-48f7-8c2f-4b643e9b6582.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -223,6 +225,8 @@ GDK_BACKEND = x11
 # environment
 LC_PAPER = zh_CN.UTF-8
 # environment
+NO_AT_BRIDGE = 1
+# environment
 QT_ACCESSIBILITY = 1
 # environment
 CUDA_HOME = /usr/local/cuda-11.4
@@ -247,11 +251,11 @@ CONDA_PYTHON_EXE = /home/rex/miniconda3/bin/python
 # environment
 QT4_IM_MODULE = fcitx
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/9d3586ec_a66b_4993_b9cf_1a1e9ff92045
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/3c2dc338_6a37_450b_8c9b_3ee1e4763024
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.19536
+GNOME_TERMINAL_SERVICE = :1.14725
 # default
 SUFFIXES := 
 # environment
@@ -273,22 +277,20 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 1731888
+VSCODE_PID = 939016
+ 
 # environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=27eacccfb631a6a591943c5a629d524c
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=54940de8301a8fdb3f6c324962ab221c
 # environment
 _CE_CONDA = 
 # variable set hash-table stats:
-# Load=134/1024=13%, Rehash=0, Collisions=20/156=13%
+# Load=135/1024=13%, Rehash=0, Collisions=20/157=13%
 
 # Pattern-specific Variable Values
 
 # No pattern-specific variable values.
 
 # Directories
-
- 
-make: *** No rule to make target 'all'.  Stop.
 
 # . (device 66305, inode 26086516): 10 files, no impossibilities.
 
@@ -348,6 +350,6 @@ GNUmakefile:
 # strcache performance: lookups = 21 / hit rate = 14%
 # hash-table stats:
 # Load=18/8192=0%, Rehash=0, Collisions=1/21=5%
-# Finished Make data base on Wed Jun 15 09:36:21 2022
+# Finished Make data base on Tue Jun 21 23:19:20 2022
 
  

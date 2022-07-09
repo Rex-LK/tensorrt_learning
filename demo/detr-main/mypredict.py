@@ -38,7 +38,7 @@ if __name__ == "__main__":
         "detr.onnx",
         input_names=["image"],
         output_names=["predict"],
-        opset_version=12,
+        opset_version=11,
         do_constant_folding=True,
         dynamic_axes={"image":{0:"batch"},} 
     )

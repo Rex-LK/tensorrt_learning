@@ -6,16 +6,16 @@
 #include <common/basic_tools.hpp>
 
 using namespace std;
-                                                                                                                                                                                                                                                                        
-int main(){
+
+int main()
+{
     // cmake和make是不同的路径
-    if(!BaiscTools::build_model("/home/rex/Desktop/cv_demo/detr-main-0614/detr_sim",1)){
+    if (!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov7", 1))
+    {
         return -1;
     }
     demoInfer demo;
-    string demo_name = "detr"; 
+    string demo_name = "yolov7";
     demo.do_infer(demo_name);
     return 0;
 }
-
-

@@ -2,7 +2,6 @@ from cuda import cudart
 import tensorrt as trt
 import numpy as np
 import cv2
-import cupy as cp
 import torch
 from basic_infer import transforms
 
@@ -96,16 +95,17 @@ def image_resize_pro(image_o, image_d_size, imagenet_mean, imagenet_std):
     return image_input
 
 
-def image_warpaffine_pro(image_o, image_d_size, imagenet_mean, imagenet_std):
+def image_warpaffine_pro(image_o, image_d_size, imagenet_mean=None, imagenet_std=None):
     img_d, M, inv = image_transfer(image_o, image_d_size)
     # 加速
     image_input = img_d[..., ::-1]  # BGR -> RGB
     image_input = image_input / 255.0
-    image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
+    if imagenet_mean and imagenet_std:
+        image_input = (image_input - imagenet_mean) / imagenet_std  # normalize
     image_input = image_input.astype(np.float32)  # float64 -> float32
     image_input = image_input.transpose(2, 0, 1)  # HWC -> CHW
-    image_input = image_input[None, ...]  # CHW -> 1CHW
-
+    image_input = np.ascontiguousarray(image_input).astype('float32')
+    # image_input = image_input[None, ...]  # CHW -> 1CHW
     return image_input, M, inv
 
 
@@ -121,3 +121,4 @@ class image_torchvision_pro():
         image_input, target = self.image_transform(image, {"box": [0, 0, image.shape[1] - 1, image.shape[0] - 1]})
         image_input = torch.unsqueeze(image_input, dim=0)
         return image_input, target
+

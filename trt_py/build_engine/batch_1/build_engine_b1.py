@@ -31,9 +31,9 @@ def build_engine(onnx_file_path, engine_file_path, input_shape, TRT_LOGGER, max_
         return
 
 if __name__ == '__main__':
-    input_shape = [1, 3, 800, 1066]
-    onnx_path = 'detr_sim.onnx'
-    pyengine_path = 'detr_sim.pyengine'
+    input_shape = [1, 3, 640, 640]
+    onnx_path = 'yolov7.onnx'
+    pyengine_path = 'yolov7.pyengine'
     max_batch_size = 1
     max_workspace_size = 30 # 1<<28
     TRT_LOGGER = trt.Logger()
