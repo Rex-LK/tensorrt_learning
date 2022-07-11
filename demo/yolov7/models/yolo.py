@@ -54,7 +54,6 @@ class Detect(nn.Module):
                 y[..., 2:4] = (y[..., 2:4] * 2) ** 2 * self.anchor_grid[i]  # wh
                 z.append(y.view(bs, -1, self.no))
         x = x if self.training else (torch.cat(z, 1))
-        print(x)
         return x
 
     @staticmethod

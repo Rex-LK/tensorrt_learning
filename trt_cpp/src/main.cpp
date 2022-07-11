@@ -17,5 +17,5 @@ int main()
     demoInfer demo;
     string demo_name = "yolov7";
     demo.do_infer(demo_name);
-    return 0;
+    return  0;
 }

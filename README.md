@@ -20,6 +20,29 @@
 
 ### 2022-07-09:增加了yolov7算法，支持cpp-tensorrt和python-tensorrt两种加速方式
 
+为了正确导出onnx需要将models/yolo.py文件中56行
+
+```python
+# x = x if self.training else (torch.cat(z, 1),x) # 修改为
+x = x if self.training else (torch.cat(z, 1))
+```
+
+在detect.py中采用如下方式导出
+
+```
+    dummy = torch.zeros(1,3,640,640)
+    torch.onnx.export(
+        model,(dummy,),
+        "yolov7.onnx",
+        input_names=["image"],
+        output_names=["predict"],
+        opset_version=13,
+        dynamic_axes={"image":{0:"batch"},"predict":{0:"batch"},} 
+    )
+```
+
+
+
 ### 2022-06-04:增加了hrnet人体关键点检测，使用cupy和torch两种后处理方式，同时在cpp中使用了gpu解码。
 
 ### 2022-06-1:优化了代码存放的文件夹，便于以后进行回溯和分类
