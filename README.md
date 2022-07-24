@@ -4,7 +4,7 @@
 
 ### 本仓库为记录学习过程中，主要是在CV领域的一些学习经验，方便日后进行回顾，同时希望能够给有需要的同学提供一些帮助，希望遇到问题能够及时探讨。
 
-### TensoRT代码可参考：https://github.com/shouxieai/tensorRT_Pro
+### TensoRT代码可参考：https://github.com/shouxieai/learning-cuda-trt
 
 ### 个人学习项目地址: https://github.com/Rex-LK/tensorrt_learning
 

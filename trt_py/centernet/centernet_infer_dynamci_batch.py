@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py")
+print(sys.path)
 import cv2
 from basic_infer.infer import Infer_bacis, image_resize_pro
 import torch
@@ -70,7 +73,7 @@ def centernet_correct_boxes(box_xy, box_wh, input_shape, image_shape, letterbox_
 if __name__ == '__main__':
     # batch-infer
     # 假定一个文件夹内的图片为一个batch
-    images_dir = 'images/'
+    images_dir = '/home/rex/Desktop/tensorrt_learning/trt_py/centernet/images/'
     images = os.listdir(images_dir)
     batch_size = len(images)
 
@@ -90,7 +93,7 @@ if __name__ == '__main__':
         img = image_resize_pro(img_o, image_d_size, imagenet_mean, imagenet_std)
         np.copyto(batch_input_image[i], img)
 
-    detr_engine_path = 'centernet.pyengine'
+    detr_engine_path = 'centernet/centernet.pyengine'
     detr_infer = Infer_bacis(detr_engine_path, batch_size=2)
     pred = detr_infer.detect(batch_input_image)
 

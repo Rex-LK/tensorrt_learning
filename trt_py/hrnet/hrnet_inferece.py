@@ -1,11 +1,12 @@
+import sys
+sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py")
 import cv2
 from basic_infer.infer import Infer_bacis, image_resize_pro, image_warpaffine_pro, image_torchvision_pro
 import torch
 import numpy as np
 import cupy as cp
 import time
-import sys
-sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py")
+
 
 
 def load_tensor(file):

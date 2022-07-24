@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/home/rex/Desktop/tensorrt_learning/trt_py/")
 import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
@@ -129,7 +131,7 @@ result = do_inference_v2(context, bindings, inputs, outputs, stream)[0]
 result = np.reshape(result,[BATCH_SIZE,-1,85])
 print(result.shape)
 
-result = result[4]
+result = result[0]
 img = cv2.resize(img,(640,640))
 boxes, confs, classes = filter_boxes(result,0.5)
 boxes, confs, classes = non_max_suppression(boxes, confs, classes)
