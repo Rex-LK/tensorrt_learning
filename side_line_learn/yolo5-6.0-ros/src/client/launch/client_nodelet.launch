@@ -4,6 +4,8 @@
 	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager)" args="manager" output="screen" />
 	
 	<node pkg="nodelet" type="nodelet" name="client_nodelet" args="standalone client_nodelet/ClientNodelet" output="screen">
-  	</node>
+	  <param name="client_name" value="yolov5" type="str" />
+	  <param name="image_path" value="/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/src/yolov5-6.0/images/bus.jpg" type="str" />
+    </node>
 
 </launch>

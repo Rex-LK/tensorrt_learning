@@ -26,8 +26,10 @@ namespace yolov5_infer_nodelet
 
     private:
         int gpu_id;
+        string engine_path;
+        string image_path;
         thread thread_;
-    
+        yolov5 *infer;
     };
 } 
 

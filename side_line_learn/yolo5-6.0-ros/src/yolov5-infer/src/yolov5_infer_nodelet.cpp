@@ -15,23 +15,23 @@ namespace yolov5_infer_nodelet
     {
         init();
         gpu_id = stoi(params_["gpu_id"]);
+        engine_path = params_["engine_path"];
+        image_path = params_["image_path"];
         thread_ = thread(boost::bind(&Yolov5InferNodelet::run, this));
-        // roi_engine_name = params_["roi_engine_name"];
-        // classNum = stoi(params_["classNum"]);
     }
 
     void Yolov5InferNodelet::run()
-    {
-        std::string engine_name = "/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/yolov5s.engine";
-        yolov5 *det = new yolov5(engine_name);
-        cv::Mat img = cv::imread("/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/images/zidane.jpg");
+    {   
+        cudaSetDevice(gpu_id);
+        infer = new yolov5(engine_path);
+        cv::Mat img = cv::imread(image_path);
         int w = img.cols;
         int h = img.rows;
         unsigned char *d_image;
         cudaMalloc((void **)&d_image, sizeof(unsigned char) * w * h * 3);
         cudaMemcpy(d_image, img.data, w * h * 3 * sizeof(unsigned char),cudaMemcpyHostToDevice);
-        det->detect(d_image, w, h,img);
-        cv::imshow("test_image", img);
+        infer->detect(d_image, w, h,img);
+        cv::imshow("show_image", img);
         cv::waitKey(0);
         cudaFree(d_image);
     }

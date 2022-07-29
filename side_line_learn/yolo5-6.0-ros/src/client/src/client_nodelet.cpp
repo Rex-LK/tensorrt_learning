@@ -14,6 +14,8 @@ namespace client_nodelet
     void ClientNodelet::onInit()
     {
         init();
+        image_path = params_["image_path"];
+        client_name = params_["client_name"];
         thread_ = thread(boost::bind(&ClientNodelet::run, this));
     }
 
@@ -21,10 +23,10 @@ namespace client_nodelet
     {
 
         setlocale(LC_ALL, "");
-        ros::service::waitForService("yolov5");
-        ros::ServiceClient client = nh_.serviceClient<base::RosImage>("yolov5");
+        ros::service::waitForService(client_name);
+        ros::ServiceClient client = nh_.serviceClient<base::RosImage>(client_name);
 
-        Mat image = cv::imread("/home/rex/Documents/yolo5-6.0-ros/src/yolov5-6.0/images/bus.jpg");
+        Mat image = cv::imread(image_path);
         sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", image).toImageMsg();
         sensor_msgs::Image msg1 = *msg;
     

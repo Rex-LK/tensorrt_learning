@@ -17,9 +17,12 @@ namespace yolov5_server_nodelet
     {
         init();
         gpu_id = stoi(params_["gpu_id"]);
-        std::string engine_name = "/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/yolov5s.engine";
-        infer = new yolov5(engine_name);
-        ros::ServiceServer server = nh_.advertiseService("yolov5", &Yolov5ServerNodelet::inference, this);
+        engine_path = params_["engine_path"];
+        server_name = params_["server_name"];
+        cudaSetDevice(gpu_id);
+        infer = new yolov5(engine_path);
+        ros::ServiceServer server = nh_.advertiseService(server_name, &Yolov5ServerNodelet::inference, this);
+        cout << "wait ..." << endl;
         ros::spin();
     }
 

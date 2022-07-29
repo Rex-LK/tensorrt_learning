@@ -5,6 +5,8 @@
 	
 	<node pkg="nodelet" type="nodelet" name="yolov5_infer_nodelet" args="standalone yolov5_infer_nodelet/Yolov5InferNodelet" output="screen">
 	  <param name="gpu_id" value="0" type="str" />
+	  <param name="engine_path" value="/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/yolov5s.engine" type="str" />
+	  <param name="image_path" value="/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/src/yolov5-6.0/images/zidane.jpg" type="str" />
   	</node>
 
 </launch>

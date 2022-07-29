@@ -46,6 +46,7 @@
         "tuple": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "iomanip": "cpp"
     }
 }

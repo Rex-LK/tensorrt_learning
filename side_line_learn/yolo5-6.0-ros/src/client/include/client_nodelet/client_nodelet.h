@@ -26,6 +26,8 @@ namespace client_nodelet
 
     private:
         thread thread_;
+        string image_path;
+        string client_name;
     };
 }
 

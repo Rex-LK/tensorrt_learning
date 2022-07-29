@@ -29,6 +29,8 @@ namespace yolov5_server_nodelet
         int gpu_id;
         unsigned char *d_image;
         yolov5 *infer;
+        std::string engine_path;
+        std::string server_name;
     };
 } 
 

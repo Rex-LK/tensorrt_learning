@@ -5,6 +5,8 @@
 	
 	<node pkg="nodelet" type="nodelet" name="yolov5_server_nodelet" args="standalone yolov5_server_nodelet/Yolov5ServerNodelet" output="screen">
 	  <param name="gpu_id" value="0" type="str" />
+	  <param name="server_name" value="yolov5" type="str" />
+	  <param name="engine_path" value="/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/yolov5s.engine" type="str" />
   	</node>
 
 </launch>
