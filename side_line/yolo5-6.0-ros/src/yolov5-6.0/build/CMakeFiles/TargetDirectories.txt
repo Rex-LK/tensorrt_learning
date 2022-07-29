@@ -1,5 +1,0 @@
-/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/build/CMakeFiles/myplugins.dir
-/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/build/CMakeFiles/yolov5.dir
-/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/build/CMakeFiles/detect.dir
-/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/build/CMakeFiles/edit_cache.dir
-/home/rex/Desktop/cv_demo/yolov5-6.0-TensorRT/tensorrtx/build/CMakeFiles/rebuild_cache.dir

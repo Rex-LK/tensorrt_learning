@@ -35,7 +35,7 @@ cuda_add_executable(yolov5 src/calibrator.cpp src/yolov5.cpp src/preprocess.cu)
 target_link_libraries(yolov5 nvinfer cudart  myplugins  ${OpenCV_LIBS})
 
 cuda_add_executable(detect  src/detect.cpp src/preprocess.cu)
-target_link_libraries(detect nvinfer cudart  myplugins mybasic  ${OpenCV_LIBS})
+target_link_libraries(detect nvinfer cudart myplugins ${OpenCV_LIBS})
 
 if(UNIX)
 add_definitions(-O2 -pthread)
