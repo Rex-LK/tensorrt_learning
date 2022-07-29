@@ -1,0 +1,3 @@
+<library path="lib/libclient_nodelet">
+  <class name="client_nodelet/ClientNodelet" type="client_nodelet::ClientNodelet" base_class_type="nodelet::Nodelet" />
+</library>

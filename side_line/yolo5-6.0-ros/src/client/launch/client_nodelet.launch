@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="nodelet_manager" default="client_manager" />
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager)" args="manager" output="screen" />
+	
+	<node pkg="nodelet" type="nodelet" name="client_nodelet" args="standalone client_nodelet/ClientNodelet" output="screen">
+  	</node>
+
+</launch>

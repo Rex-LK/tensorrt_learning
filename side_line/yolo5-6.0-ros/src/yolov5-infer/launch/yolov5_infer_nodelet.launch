@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="nodelet_manager" default="yolov5_infer_manager" />
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager)" args="manager" output="screen" />
+	
+	<node pkg="nodelet" type="nodelet" name="yolov5_infer_nodelet" args="standalone yolov5_infer_nodelet/Yolov5InferNodelet" output="screen">
+	  <param name="gpu_id" value="0" type="str" />
+  	</node>
+
+</launch>

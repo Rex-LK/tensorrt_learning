@@ -1,0 +1,3 @@
+<library path="lib/libyolov5_infer_nodelet">
+  <class name="yolov5_infer_nodelet/Yolov5InferNodelet" type="yolov5_infer_nodelet::Yolov5InferNodelet" base_class_type="nodelet::Nodelet" />
+</library>

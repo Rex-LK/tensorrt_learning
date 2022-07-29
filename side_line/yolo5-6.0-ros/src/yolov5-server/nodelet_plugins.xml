@@ -1,0 +1,3 @@
+<library path="lib/libyolov5_server_nodelet">
+  <class name="yolov5_server_nodelet/Yolov5ServerNodelet" type="yolov5_server_nodelet::Yolov5ServerNodelet" base_class_type="nodelet::Nodelet" />
+</library>

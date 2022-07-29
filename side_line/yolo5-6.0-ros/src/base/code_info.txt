@@ -1,0 +1,45 @@
+warning:
+001 active_safety
+002 active_safety cps status
+003 active_safety top lidar loading
+004 active_safety path check
+005 active_safety junction speed limit
+006 coudl not get matched cps info
+007 active_safety end check
+008 active_safety slow down
+009 active_safety top safety
+010 GPS or Chassis info may delay
+011 trailer angle init error, could not get correct path
+012 control fail
+013 fms suspend
+014 emergency stop not tiggered in TS area
+015 emergency stop not released in TS area
+016 no pass area stop
+017 guarding not open
+018 active_safety lane change
+019 could not get stop dis rtgc
+020 could not get stop dis qc
+021 active_safety stereo_check fail
+022 active_safety lidar_check fail
+023 precise stop over 1.5 limit
+024 lane change blocked by light tower
+025 max steer arrive
+026 routing block in cutout
+027 cps info delay
+028 precise stop timeout
+029 too close for routing
+030 vehicle param not init
+031 lock task get
+032 task abort
+033 overtake stop
+
+error
+001 routing_fail
+002 top lidar scenario not calibed, require calib
+003 websocket lost connection
+004 stop dis config file open fail
+006 cps_fetch crash
+007 fms server disconnect
+008 motion obstacle abnormal
+009 active safety abnormal
+010 module crash

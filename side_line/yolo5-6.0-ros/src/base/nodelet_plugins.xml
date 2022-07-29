@@ -1,0 +1,3 @@
+<library path="lib/libtest_nodelet">
+  <class base_class_type="nodelet::Nodelet" name="module_base/TestNodelet" type="module_base::TestNodelet" />
+</library>
