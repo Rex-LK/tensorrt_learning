@@ -1,32 +1,32 @@
-# CV学习笔记之tensorrt__cuda_python
+### CV学习笔记之tensorrt__cuda_python
 
-# 1、前言
+#### 1、前言
 
-### 在使用tensorrt的时候，一般是使用cpp，对于cpp基础一般的同学不是很友好，尤其是在学习的过程中，而cpp主要是在部署的时候用到，最近了解到了Nvidia推出的cuda-python库，与之前的pycuda有类似的功能，但整体的编码风格与cpp类似，可以参考下文的代码，转成tensorrt之后，可以在python中先编写后处理的方式，有需要时再改写成cpp，也是一种不错的方式，但python版本的tensorrt相对于cpp来说仍然有不少的局限性。
+在使用tensorrt的时候，一般是使用cpp，对于cpp基础一般的同学不是很友好，尤其是在学习的过程中，而cpp主要是在部署的时候用到，最近了解到了Nvidia推出的cuda-python库，与之前的pycuda有类似的功能，但整体的编码风格与cpp类似，可以参考下文的代码，转成tensorrt之后，可以在python中先编写后处理的方式，有需要时再改写成cpp，也是一种不错的方式，但python版本的tensorrt相对于cpp来说仍然有不少的局限性。
 
-### 个人学习代码地址为:
+个人学习代码地址为:
 
-## https://github.com/Rex-LK/tensorrt_learning
+https://github.com/Rex-LK/tensorrt_learning
 
-### (ps: 本仓库的代码暂时只支持单张图片推理，由于水平有限，这个问题暂时没有得到解决，要是有哪位大佬知道，麻烦解答一下)
+(ps: 本仓库的代码暂时只支持单张图片推理，由于水平有限，这个问题暂时没有得到解决，要是有哪位大佬知道，麻烦解答一下)
 
-## 2、环境配置
+### 2、环境配置
 
-### 2.1、推荐在conda环境下进行安装，更推荐miniconda
+2.1、推荐在conda环境下进行安装，更推荐miniconda
 
-### 2.2、cuda-python，这个库可以采用pip安装，也可以下载github中对应的仓库代码进行编译安装
+2.2、cuda-python，这个库可以采用pip安装，也可以下载github中对应的仓库代码进行编译安装
 
-### 2.3、torch，onnx，尽量安装最新的版本,避免出现bug
+2.3、torch，onnx，尽量安装最新的版本,避免出现bug
 
-## 3、build_engine
+### 3、build_engine
 
-## 3.1、exoprt_onnx
+3.1、exoprt_onnx
 
-### 通常情况下，项目代码都提供了导出onnx模型的方式，但是通常都不是我们想要的onnx模型，或者这个onnx的模型还能得到一定的优化，比如将部分后处理放在onnx模型，就据需要自定义导出onnx模型了，可以参考https://blog.csdn.net/weixin_42108183/article/details/124969680
+通常情况下，项目代码都提供了导出onnx模型的方式，但是通常都不是我们想要的onnx模型，或者这个onnx的模型还能得到一定的优化，比如将部分后处理放在onnx模型，就据需要自定义导出onnx模型了，可以参考https://blog.csdn.net/weixin_42108183/article/details/124969680
 
-## 3.2、onnx2trt
+3.2、onnx2trt
 
-### python版本与cpp版本的onnx2trt的方式十分类似，首先来看cpp是如何来构造引擎的，这是最基本的构造engine的方法，更方便的代码可以参考[手写AI](https://github.com/shouxieai/tensorRT_Pro)
+python版本与cpp版本的onnx2trt的方式十分类似，首先来看cpp是如何来构造引擎的，这是最基本的构造engine的方法，更方便的代码可以参考[手写AI](https://github.com/shouxieai/tensorRT_Pro)
 
 ```cpp
 bool build_model(){
@@ -78,7 +78,7 @@ bool build_model(){
 }
 ```
 
-### 从上面的代码可以看出，通常情况下，转onnx需要下面几个组件builder、config、network、parser,接下来看看在python中构造引擎的方式，是不是与cpp的转化方式如出一辙呢。
+从上面的代码可以看出，通常情况下，转onnx需要下面几个组件builder、config、network、parser,接下来看看在python中构造引擎的方式，是不是与cpp的转化方式如出一辙呢。
 
 ```python
 import tensorrt as trt
@@ -126,11 +126,11 @@ if __name__ == '__main__':
     build_engine(onnx_path, pyengine_path, input_shape,TRT_LOGGER , max_batch_size , max_workspace_size)
 ```
 
-### 通过上面的代码通常可以将onnx模型转化为engine，但是使用的是trt.OnnxParser，有些模型会转化失败，而使用onnx-tensorrt源码来进行构造引擎时，自由度更高，成功的概率也越大，但是对于一般的学习来说，trt.OnnxParser基本上足够了。
+通过上面的代码通常可以将onnx模型转化为engine，但是使用的是trt.OnnxParser，有些模型会转化失败，而使用onnx-tensorrt源码来进行构造引擎时，自由度更高，成功的概率也越大，但是对于一般的学习来说，trt.OnnxParser基本上足够了。
 
-## 4、单张图片推理
+### 4、单张图片推理
 
-### 整个过程也是分为三个过程，图像预处理、推理、后处理，这里着重比较一下cuda-cpp、cuda-python以及pycuda三者之间的异同，首先查看cpp中在推理前后需要做的事情
+整个过程也是分为三个过程，图像预处理、推理、后处理，这里着重比较一下cuda-cpp、cuda-python以及pycuda三者之间的异同，首先查看cpp中在推理前后需要做的事情
 
 ```cpp
 cudaStream_t stream = nullptr;
@@ -165,7 +165,7 @@ checkRuntime(cudaStreamSynchronize(stream));
 
 ```
 
-### 大致可分为三步，分配空间、推理、复制结果。接下来看看在cuda-python之前是怎么进行推理的，以pycuda为例，该例子可以见https://github.com/NVIDIA/TensorRT/tree/main/samples/python/yolov3_onnx
+大致可分为三步，分配空间、推理、复制结果。接下来看看在cuda-python之前是怎么进行推理的，以pycuda为例，该例子可以见https://github.com/NVIDIA/TensorRT/tree/main/samples/python/yolov3_onnx
 
 ```python
 #分配空间
@@ -212,7 +212,7 @@ def do_inference_v2(context, bindings, inputs, outputs, stream):
     return [out.host for out in outputs]
 ```
 
-### 最后来看看cuda-python库是怎么操作的，我对cuda-python简单的封装了一个Infer类，在初始化中分配空间，在detect函数中进行推理。
+最后来看看cuda-python库是怎么操作的，我对cuda-python简单的封装了一个Infer类，在初始化中分配空间，在detect函数中进行推理。
 
 ```python
 from cuda import cudart
@@ -269,11 +269,11 @@ class Infer_bacis():
         return output
 ```
 
-### 从cuda-python的方式来看，其中数据的复制方式与cpp更加类似，函数名也几乎一致，这样用起来也更加方便了。
+从cuda-python的方式来看，其中数据的复制方式与cpp更加类似，函数名也几乎一致，这样用起来也更加方便了。
 
-## 5、总结
+### 5、总结
 
-### 本次学习了cuda-python、tensorrt的实现过程，包括torch转onnx、onnx转tensorrt的方法，虽然目前并不完善，后续也会进行相应的跟进，解决多batch推理的问题。同时了解到了在python上进行cuda加速的方法，后续会对cpp和python的tensorrt方法持续跟进。
+本次学习了cuda-python、tensorrt的实现过程，包括torch转onnx、onnx转tensorrt的方法，虽然目前并不完善，后续也会进行相应的跟进，解决多batch推理的问题。同时了解到了在python上进行cuda加速的方法，后续会对cpp和python的tensorrt方法持续跟进。
 
 
 

@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/devel_isolated/yolov5_infer_nodelet/setup.sh

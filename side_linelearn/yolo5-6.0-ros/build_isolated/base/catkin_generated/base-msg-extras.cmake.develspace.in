@@ -1,0 +1,2 @@
+set(base_MESSAGE_FILES "")
+set(base_SERVICE_FILES "/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/src/base/srv/RosImage.srv")
