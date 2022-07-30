@@ -34,7 +34,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 
 #设置yolov5路径
-set(yolov5_dir /home/rex/Documents/yolo5-6.0-ros/src/yolov5-6.0)
+set(yolov5_dir /home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/src/yolov5-6.0)
 
 include_directories(${yolov5_dir}/include)
 

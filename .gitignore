@@ -20,3 +20,5 @@ trt_cpp/workspace/demo_infer
 *.idea
 *.pt
 *.jpg
+side_line_learn/yolo5-6.0-ros/build_isolated
+side_line_learn/yolo5-6.0-ros/devel_isolated
