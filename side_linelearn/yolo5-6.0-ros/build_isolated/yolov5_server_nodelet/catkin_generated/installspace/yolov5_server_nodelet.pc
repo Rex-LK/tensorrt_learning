@@ -1,8 +1,0 @@
-prefix=/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/install_isolated
-
-Name: yolov5_server_nodelet
-Description: Description of yolov5_server_nodelet
-Version: 0.0.0
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib -lyolov5_server_nodelet
-Requires: base nodelet roscpp rospy std_msgs message_runtime

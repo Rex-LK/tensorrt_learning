@@ -1,2 +1,0 @@
-base:client:yolov5-infer:yolov5-server
--DPYTHON_EXECUTABLE=/usr/bin/python3 -G Unix Makefiles -DCATKIN_DEVEL_PREFIX=/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/devel_isolated -DCMAKE_INSTALL_PREFIX=/home/rex/Desktop/tensorrt_learning/side_line_learn/yolo5-6.0-ros/install_isolated
