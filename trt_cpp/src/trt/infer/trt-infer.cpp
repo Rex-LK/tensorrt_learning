@@ -279,7 +279,7 @@ namespace TRT {
 		
 		EngineContext* context = (EngineContext*)this->context_.get();
 		int nbBindings = context->engine_->getNbBindings();
-		int max_batchsize = context->engine_->getMaxBatchSize();
+        int max_batchsize = context->engine_->getMaxBatchSize();
 
 		inputs_.clear();
 		inputs_name_.clear();
@@ -307,7 +307,7 @@ namespace TRT {
 				//if is output
 				outputs_.push_back(newTensor);
 				outputs_name_.push_back(bindingName);
-				outputs_map_to_ordered_index_.push_back(orderdBlobs_.size());
+                outputs_map_to_ordered_index_.push_back(orderdBlobs_.size());
 			}
 			blobsNameMapper_[bindingName] = i;
 			orderdBlobs_.push_back(newTensor);
@@ -428,7 +428,8 @@ namespace TRT {
 	}
 
 	std::shared_ptr<Tensor> InferImpl::output(int index) {
-		if(index < 0 || index >= outputs_.size()){
+
+        if(index < 0 || index >= outputs_.size()){
 			INFOF("Output index[%d] out of range [size=%d]", index, outputs_.size());
 		}
 		return outputs_[index];
