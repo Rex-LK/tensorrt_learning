@@ -7,6 +7,8 @@
 #include <demo-infer/unet/unet.h>
 #include <demo-infer/vit/vit.h>
 #include <demo-infer/yolov7/yolov7.h>
+#include <demo-infer/yolov5seg/yolov5seg.h>
+
 class demoInfer
 {
 public:
@@ -60,6 +62,9 @@ public:
         else if (demo_name == "yolov7_gpu_decode")
         {
             Yolov7::yolov7_inference_gpu();
+        }
+        else if (demo_name == "yolov5seg"){
+            Yolov5Seg::yolov5Seg_inference();
         }
     }
 };

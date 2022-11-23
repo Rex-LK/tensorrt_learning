@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
+# set (CMAKE_C_COMPILER "/usr/bin/gcc")
+# set (CMAKE_CXX_COMPILER "/usr/bin/g++")
+
 project(demo_trt)
 
 option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Debug)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/workspace)
 set(HAS_PYTHON OFF)

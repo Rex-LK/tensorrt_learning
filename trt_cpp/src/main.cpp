@@ -10,12 +10,12 @@ using namespace std;
 int main()
 {
     // cmake和make是不同的路径
-    if (!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov7", 1))
+    if (!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov5n-seg", 1))
     {
         return -1;
     }
     demoInfer demo;
-    string demo_name = "yolov7";
+    string demo_name = "yolov5seg";
     demo.do_infer(demo_name);
     return  0;
 }
