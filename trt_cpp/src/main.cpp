@@ -10,7 +10,7 @@ using namespace std;
 int main()
 {
     // cmake和make是不同的路径
-    if (!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov5n-seg", 1))
+    if (!BaiscTools::build_model("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov5s-seg", 1))
     {
         return -1;
     }
