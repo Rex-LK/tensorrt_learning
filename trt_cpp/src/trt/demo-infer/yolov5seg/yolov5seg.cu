@@ -4,9 +4,24 @@
 #include <common/trt-tensor.hpp>
 #include <common/matrix.hpp>
 #include <opencv2/opencv.hpp>
-#include<demo-infer/yolov5seg/yolov5seg.h>
+#include<demo-infer/yolov5seg/yol
+        // cv::imwrite(to_string(i) + "_.jpg", b);ov5seg.h>
 
+static const int INPUT_H = 640;
+static const int INPUT_W = 640;
+static const int segWidth = 160;
+static const int segHeight = 160;
+static const int segChannels = 32;
 static const int CLASSES = 80;
+static const int Box_col = 117;
+static const int Num_box = 25200;
+static const int OUTPUT_SIZE = Num_box * (CLASSES+5 + segChannels);  // det output
+static const int OUTPUT_SIZE1 = segChannels * segWidth * segHeight ;//seg output
+
+static const float CONF_THRESHOLD = 0.1;
+static const float NMS_THRESHOLD = 0.5;
+static const float MASK_THRESHOLD = 0.5;
+
 
 using namespace std;
 using namespace cv;
@@ -26,26 +41,20 @@ Matrix mygemm(const Matrix& a, const Matrix& b){
     return c;
 }
 
-struct yolov5out_seg {
-	int id;             
-	float confidence;   
-	Rect box;       
-	Mat boxMask;
-};
 
-struct yolov5seg_bbox{
+struct detBox{
     float left, top, right, bottom, confidence;
     int class_label;
     Rect box;
     Mat boxMask;
     Matrix mask_cofs;
-    yolov5seg_bbox() = default;
+    detBox() = default;
     vector<float> proto;
-    yolov5seg_bbox(float left, float top, float right, float bottom, float confidence, int class_label, Matrix mask_cofs, Rect box, vector<float> proto)
-        : left(left), top(top), right(right), bottom(bottom), confidence(confidence), class_label(class_label), mask_cofs(mask_cofs), box(box) ,proto(proto){}
+    detBox(float left, float top, float right, float bottom, float confidence, int class_label, Matrix mask_cofs, Rect box)
+        : left(left), top(top), right(right), bottom(bottom), confidence(confidence), class_label(class_label), mask_cofs(mask_cofs), box(box){}
 };
 
-void DrawPred(Mat& img,std::vector<yolov5seg_bbox> result) {
+void DrawPred(Mat& img,std::vector<detBox> result) {
 	std::vector<Scalar> color;
 	srand(time(0));
     for (int i = 0; i < CLASSES; i++)
@@ -67,7 +76,6 @@ void DrawPred(Mat& img,std::vector<yolov5seg_bbox> result) {
         cv::Mat a = result[i].boxMask;
 
         c.setTo(color[result[i].class_label], a);
-        // imwrite(to_string(i) + "_.png", c);
         std::string label = std::to_string(result[i].class_label) + ":" + std::to_string(result[i].confidence);
         int baseLine;
 		Size labelSize = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
@@ -81,15 +89,15 @@ void DrawPred(Mat& img,std::vector<yolov5seg_bbox> result) {
 
 
 void Yolov5Seg::yolov5Seg_inference(){
-
+    // 加载模型
     auto engine = TRT::load_infer("/home/rex/Desktop/tensorrt_learning/trt_cpp/workspace/yolov5s-seg.trtmodel");
     if(!engine){
         printf("load engine failed \n");
         return;
     }
     auto input       = engine->input();
-    auto output      = engine->output();
-    auto output1      = engine->output(1);
+    auto seg_out      = engine->output();
+    auto det_out      = engine->output(1);
 
     int input_width  = input->width();
     int input_height = input->height();
@@ -98,11 +106,10 @@ void Yolov5Seg::yolov5Seg_inference(){
     int img_w = image.cols;
     int img_h = image.rows;
     Mat input_image;
-    resize(image,input_image,Size(640,640));
+    resize(image,input_image,Size(input_width,input_height));
     Mat show_img = input_image.clone();
-
     input_image.convertTo(input_image, CV_32F);
-
+    // 预处理
     Mat channel_based[3];
     for(int i = 0; i < 3; ++i)
         channel_based[i] = Mat(input_height, input_width, CV_32F, input->cpu<float>(0, 2-i));
@@ -113,30 +120,21 @@ void Yolov5Seg::yolov5Seg_inference(){
     
     engine->forward(true);
 
-    float *prob = output->cpu<float>();
-    float *prob1 = output1->cpu<float>();
-
-    float *predict = prob1;
-    int cols = 117; // 85 + 32
-    int len_proto = 32;
-    int num_classes = 80 ;
-    int rows = 25200;
-    vector<yolov5seg_bbox> boxes;
-    float confidence_threshold = 0.3;
-    float nms_threshold = 0.5;
-
-    for(int i = 0; i < rows; ++i){
-        float* pitem = predict + i * cols;
+    // 检测结果
+    float *det_res = det_out->cpu<float>();
+    vector<detBox> boxes;
+    for(int i = 0; i < Num_box; ++i){
+        float* pitem = det_res + i * Box_col;
         float objness = pitem[4];
-        if(objness < confidence_threshold)
+        if(objness < CONF_THRESHOLD)
             continue;
 
         float* pclass = pitem + 5;
-        int label     = std::max_element(pclass, pclass + num_classes) - pclass;
+        int label     = std::max_element(pclass, pclass + CLASSES) - pclass;
 
         float prob    = pclass[label];
         float confidence = prob * objness;
-        if(confidence < confidence_threshold)
+        if(confidence < CONF_THRESHOLD)
             continue;
 
         float cx     = pitem[0];
@@ -144,26 +142,27 @@ void Yolov5Seg::yolov5Seg_inference(){
         float width  = pitem[2];
         float height = pitem[3];
 
-
-        // 通过反变换恢复到图像尺度
         float left   = (cx - width * 0.5);
         float top    = (cy - height * 0.5);
         float right  = (cx + width * 0.5);
         float bottom = (cy + height * 0.5);
         Rect rect(left,top,width,height);
+        // 每个box的mask系数
+        vector<float> temp_proto(pitem + 5 + CLASSES, pitem + 5 + CLASSES + segChannels);
+        Matrix tmp_cof(1, segChannels, temp_proto);
 
-        vector<float> temp_proto(pitem + 5 + num_classes, pitem + 5 + num_classes + len_proto);
-        Matrix tmp_cof(1, 32, temp_proto);
-        boxes.emplace_back(left, top, right, bottom, confidence, (float)label,tmp_cof,rect,temp_proto);
+        boxes.emplace_back(left, top, right, bottom, confidence, (float)label,tmp_cof,rect);
         
     }
-    std::sort(boxes.begin(), boxes.end(), [](yolov5seg_bbox &a, yolov5seg_bbox &b)
+
+    // NMS
+    std::sort(boxes.begin(), boxes.end(), [](detBox &a, detBox &b)
               { return a.confidence > b.confidence; });
     std::vector<bool> remove_flags(boxes.size());
-    std::vector<yolov5seg_bbox> box_result;
+    std::vector<detBox> box_result;
     box_result.reserve(boxes.size());
 
-    auto iou = [](const yolov5seg_bbox& a, const yolov5seg_bbox& b){
+    auto iou = [](const detBox& a, const detBox& b){
         float cross_left   = std::max(a.left, b.left);
         float cross_top    = std::max(a.top, b.top);
         float cross_right  = std::min(a.right, b.right);
@@ -187,96 +186,37 @@ void Yolov5Seg::yolov5Seg_inference(){
             auto& jbox = boxes[j];
             if(ibox.class_label == jbox.class_label){
                 // class matched
-                if(iou(ibox, jbox) >= nms_threshold)
+                if(iou(ibox, jbox) >= NMS_THRESHOLD)
                     remove_flags[j] = true;
             }
         }
     }
     
-    // seg 
-	Mat maskProposals;
-    vector<float> mask_all;
-    for (int i = 0; i < box_result.size(); i++)
-    {
-        vector<float> tmpP = box_result[i].proto;
-        maskProposals.push_back(Mat(tmpP).t());
-
-        for (int k = 0; k < tmpP.size();k++){
-            mask_all.push_back(tmpP[k]);
-        }
-    };
-    Matrix mask_cof(box_result.size(), len_proto,mask_all);
-
-    float *pdata = prob;
-    int _segChannels = 32;
-    int _segWidth = 160;
-    int _segHeight = 160;
-    int INPUT_H = 640;
-    int INPUT_W = 640;
-    int MASK_THRESHOLD = 0.5;
-	vector<float> mask(pdata, pdata + _segChannels * _segWidth * _segHeight);
-    Matrix seg_proto(32, 160 * 160, mask);
-
-    // 5 * (160*160)
-    // Matrix reultSeg = mygemm(mask_cof, seg_proto);
-
-    Mat mask_protos = Mat(mask);
-    // // reshape 成 32 * 160
-    Mat protos = mask_protos.reshape(0, { _segChannels,_segWidth * _segHeight });
-	std::cout<<protos.size<<std::endl;
-    Mat matmulRes = (maskProposals * protos).t();
-    Mat masks = matmulRes.reshape(box_result.size(), { _segWidth,_segHeight });
-    std::vector<Mat> maskChannels;
-    // 5 个 160 * 160 的矩阵
-    split(masks, maskChannels);
-    
+    // 原型mask 32 * 160 * 160
+    float *seg_det = seg_out->cpu<float>();
+    vector<float> mask(seg_det, seg_det + segChannels * segWidth * segHeight);
+    // 储存为矩阵
+    Matrix seg_proto(segChannels, segWidth * segHeight, mask);
     for (int i = 0; i < box_result.size(); ++i) {
-        cout << 999 << endl;
+        // 可以将所有的mask系数放在一起，然后利用cuda进行加速计算
+
+        // 每个目标框的mask系数 乘以原型mask 并取sigmod
+        Matrix resSeg = (mygemm(box_result[i].mask_cofs,seg_proto).exp(-1) + 1.0).power(-1);
         
-        // 1 * (160*160)
-        Matrix cur_seg = (mygemm(box_result[i].mask_cofs,seg_proto).exp(-1) + 1.0).power(-1);
-        cout << 888 << endl;
-
-        Mat m_dest(cur_seg.data_);
-        m_dest = m_dest.reshape(0,{160,160});
-
-        cout << m_dest.rows << endl;
-        cout << m_dest.cols << endl;
-
-        Rect m_roi(0, 0, 160, 160);
-        m_dest = m_dest(m_roi);
-        Mat m_mask;
-        resize(m_dest, m_mask, Size(640,640), INTER_NEAREST);
-        
-        // cout << 0 << endl;
-        
-        // Mat dest, mask;
-        // //sigmod
-        // cv::exp(-maskChannels[i], dest);
-        // // dist 160 * 160
-        // dest = 1 / (1.0 + dest);
-
-        // Rect roi(0,0,160,160);
-		// dest = dest(roi);
-        // resize(dest, mask, Size(640,640), INTER_NEAREST);
-
+        Mat resMat(resSeg.data_);
+        resMat = resMat.reshape(0,{segHeight,segWidth});
+        // 如果图片预处理为直接resize,那么计算出来的resMat可以直接缩放回原图，
+        // 如果是填充黑边的resize，可以参考原代码将原型mask恢复到原图大小
+        resize(resMat, resMat, Size(INPUT_H,INPUT_W), INTER_NEAREST);
+        // 获取原型mask里面目标框的区域
         Rect temp_rect = box_result[i].box;
-        cv::Mat b;
-        inRange(m_mask(temp_rect), 0.5, 1, b);
-
-        Point classIdPoint;
-        double max_class_socre;
-		minMaxLoc(b, 0, &max_class_socre, 0, &classIdPoint);
-		max_class_socre = (float)max_class_socre;
-		box_result[i].boxMask = b;
-        cv::imwrite(to_string(i) + "_.jpg", b);
+        // 将目标框区域 大于0.5的值变为255
+        cv::Mat binaryMat;
+        inRange(resMat(temp_rect), 0.5, 1, binaryMat);
+		box_result[i].boxMask = binaryMat;
+        // cv::imwrite(to_string(i) + "_.jpg", b);
     }
-
-     for (int i = 0; i < box_result.size(); ++i){
-        //取 reultSeg 的每一行
-     }
-
-
+    // 渲染
     DrawPred(show_img, box_result);
     cv::imwrite("output-seg.jpg", show_img);
 }
