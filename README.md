@@ -28,6 +28,8 @@ https://www.bilibili.com/video/BV1yA411M7T4?spm_id_from=333.999.0.0
 
 #### 3、更新日志
 
+202211-27:更新了yolov5-7.0 的 实例分割代码
+
 2022-07-30:增加了ros中使用yolov5&tensorRT的demo，包含两种启动方式，单节点启动以及client/server的方式，具体过程见sideline_learn/yolov5-6.0-ros/README.md
 
 2022-07-09:增加了yolov7算法，支持cpp-tensorrt和python-tensorrt两种加速方式

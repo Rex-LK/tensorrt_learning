@@ -194,6 +194,9 @@ void Yolov5Seg::yolov5Seg_inference(){
     // 原型mask 32 * 160 * 160
     float *seg_det = seg_out->cpu<float>();
     vector<float> mask(seg_det, seg_det + segChannels * segWidth * segHeight);
+    for (int i = 0; i < mask.size();i++){
+        cout << mask[i] << endl;
+    }
     // 矩阵表示
     Matrix seg_proto(segChannels, segWidth * segHeight, mask);
     for (int i = 0; i < box_result.size(); ++i) {
