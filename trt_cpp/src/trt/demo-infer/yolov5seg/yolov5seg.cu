@@ -49,7 +49,6 @@ struct detBox{
     Mat boxMask;
     Matrix mask_cofs;
     detBox() = default;
-    vector<float> proto;
     detBox(float left, float top, float right, float bottom, float confidence, int class_label, Matrix mask_cofs, Rect box)
         : left(left), top(top), right(right), bottom(bottom), confidence(confidence), class_label(class_label), mask_cofs(mask_cofs), box(box){}
 };
@@ -195,11 +194,10 @@ void Yolov5Seg::yolov5Seg_inference(){
     // 原型mask 32 * 160 * 160
     float *seg_det = seg_out->cpu<float>();
     vector<float> mask(seg_det, seg_det + segChannels * segWidth * segHeight);
-    // 储存为矩阵
+    // 矩阵表示
     Matrix seg_proto(segChannels, segWidth * segHeight, mask);
     for (int i = 0; i < box_result.size(); ++i) {
-        // 可以将所有的mask系数放在一起，然后利用cuda进行加速计算
-
+        // 可以将所有的mask系数放在一起，然后利用cuda或者其他库进行加速计算
         // 每个目标框的mask系数 乘以原型mask 并取sigmod
         Matrix resSeg = (mygemm(box_result[i].mask_cofs,seg_proto).exp(-1) + 1.0).power(-1);
         
