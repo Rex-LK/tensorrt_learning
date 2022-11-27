@@ -1,10 +1,10 @@
-#include<infer/trt-infer.hpp>
-#include<common/basic_tools.hpp>
-#include<common/cuda-tools.hpp>
+#include <infer/trt-infer.hpp>
+#include <common/basic_tools.hpp>
+#include <common/cuda-tools.hpp>
 #include <common/trt-tensor.hpp>
 #include <common/matrix.hpp>
 #include <opencv2/opencv.hpp>
-#include<demo-infer/yolov5seg/yol
+#include <demo-infer/yolov5seg/yolov5seg.h>
         // cv::imwrite(to_string(i) + "_.jpg", b);ov5seg.h>
 
 static const int INPUT_H = 640;
