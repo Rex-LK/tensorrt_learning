@@ -14,7 +14,7 @@ from tools import *
 if __name__ == "__main__":
 
     data_transform = transforms.Compose([
-        transforms.Resize(800),
+        transforms.Resize(640),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
 
     session = onnxruntime.InferenceSession("detr_sim.onnx", providers=["CPUExecutionProvider"])
-    pred = session.run(["predict"], {"image": image_input})[0]
+    pred = session.run(["output"], {"image": image_input})[0]
     print(pred)
     scores = torch.from_numpy(pred[0][:,0:91])
     bboxes = torch.from_numpy(pred[0][:,91:])

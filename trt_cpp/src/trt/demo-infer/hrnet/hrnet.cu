@@ -46,10 +46,11 @@ void Hrnet::hrnet_inference(){
     // cv::imwrite("warp-affine.jpg", input_image);
     input_image.convertTo(input_image, CV_32F);
 
+    //brg2rgb
     Mat channel_based[3];
     for(int i = 0; i < 3; ++i)
         channel_based[i] = Mat(input_height, input_width, CV_32F, input->cpu<float>(0, 2-i));
-
+    // (image -maen) / std 
     split(input_image, channel_based);
     for(int i = 0; i < 3; ++i)
         channel_based[i] = (channel_based[i] / 255.0f - mean[i]) / std[i];
