@@ -20,5 +20,9 @@ trt_cpp/workspace/demo_infer
 *.idea
 *.pt
 *.jpg
-side_line_learn/yolo5-6.0-ros/build_isolated
-side_line_learn/yolo5-6.0-ros/devel_isolated
+sideline_learn/yolo5-6.0-ros/build_isolated
+sideline_learn/yolo5-6.0-ros/devel_isolated
+
+sideline_learn/ncnn_multi_thread/build
+sideline_learn/ncnn_multi_thread/data
+sideline_learn/ncnn_multi_thread/ncnn
