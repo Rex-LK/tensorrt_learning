@@ -16,7 +16,7 @@ int main()
 
     auto infer = create_infer(
         param_path,
-        model_path); // 创建及初始化 抖音网页短视频辅助讲解: 创建及初始化推理器
+        model_path); // 创建及初始化推理器
 
     if (infer == nullptr)
     {
