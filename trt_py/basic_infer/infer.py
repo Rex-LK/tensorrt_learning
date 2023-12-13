@@ -59,8 +59,6 @@ class Infer_bacis():
 
     def detect(self, image):
 
-        # 从这里可以看出 batch推理有问题,只有第一张图片有结果
-        # image[0] = image[1]
         batch_input_image = np.ascontiguousarray(image)
         np.copyto(self.host_inputs[0], batch_input_image.ravel())
         cudart.cudaMemcpyAsync(self.cuda_inputs[0], self.host_inputs[0].ctypes.data, self.host_inputs[0].nbytes,
