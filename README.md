@@ -56,7 +56,3 @@ onnx2trt:/build_engine/batch_1/build_engine_single_image.py
 2022-05-17: 为onnx2trt增加了CMakeLists的编译方式，需要修改在CmakeLists中本机的tensorrt和protobuf的路径即可，编译好的文件在workspace中，==使用cmake时使用模型和图片使用绝对路径，使用makefile时使用相对路径即可。==
 
 ...centernet、vit、unet、等均已经实现
-
-### 
-
-de
