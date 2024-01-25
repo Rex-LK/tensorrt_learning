@@ -27,6 +27,8 @@ https://www.bilibili.com/video/BV1yA411M7T4?spm_id_from=333.999.0.0
 2.4、trt_py: 使用python进行tensorRT
 
 #### 3、更新日志
+202401025:删除了onnx转engine的代码,便于复现，现在模型可以使用如下的方式进行转换:
+    trtexec --onnx=yolov5s_mobv3s.onnx --saveEngine=test.engine
 
 202211-27:更新了yolov5-7.0 的 实例分割代码
 

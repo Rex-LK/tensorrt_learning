@@ -5,9 +5,6 @@
 // 编译用的头文件
 #include <NvInfer.h>
 
-// onnx解析器的头文件
-#include <onnx-tensorrt/NvOnnxParser.h>
-
 // 推理用的运行时头文件
 #include <NvInferRuntime.h>
 
@@ -22,7 +19,6 @@
 #include <sys/time.h>
 #include <opencv2/opencv.hpp>
 #include <common/simple-logger.hpp>
-#include <builder/trt-builder.hpp>
 
 
 

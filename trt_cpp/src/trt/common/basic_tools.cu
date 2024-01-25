@@ -15,22 +15,6 @@ bool BaiscTools::exists(const string& path){
 #endif
 }
 
-bool BaiscTools::build_model(string model,int maxbatch){
-    if(exists(model + ".trtmodel")){
-        printf("%s.trtmodel has exists.\n",model.c_str());
-        return true;
-    }
-    //onnx2trtmodel
-    TRT::compile(
-        TRT::Mode::FP32,
-        maxbatch,
-        model + ".onnx",
-        model+ ".trtmodel",
-        1 << 28
-    );
-    INFO("Done.");
-    return true;
-}
 
 vector<string> BaiscTools::load_labels(const char* file){
     vector<string> lines;
