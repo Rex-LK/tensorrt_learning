@@ -40,7 +40,7 @@ private:
     queue<Job> jobs_;
     mutex lock_;
     condition_variable cv_;
-    FastDet *fast_det_ = nullptr;
+    shared_ptr<FastDet*> fast_det_ = nullptr;
     string param_path_;
     string model_path_;
     int batch_size = 1;
@@ -103,8 +103,7 @@ void InferImpl::worker(promise<bool> &pro)
 {
     // load model
     // 加载模型
-    fast_det_ =
-        new FastDet(input_width_, input_height_, param_path_, model_path_);
+    fast_det_.reset(new FastDet(input_width_, input_height_, param_path_, model_path_));
     if (fast_det_ == nullptr)
     {
         // failed
